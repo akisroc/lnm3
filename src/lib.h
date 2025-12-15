@@ -3,6 +3,6 @@
 
 #include "types.h"
 
-Piece init_piece(PieceType type);
+// Piece init_piece(PieceType type);
 
 #endif // LIBLNM3_LIB_H
