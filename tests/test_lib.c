@@ -1,6 +1,7 @@
 #include "../src/lib.h"
 #include <assert.h>
 #include <stdio.h>
+#include <string.h>
 
 #define FMT_GREEN "\033[32m"
 #define FMT_RED "\033[31m"
@@ -23,6 +24,12 @@ int test_init_piece(void) {
         pieces[i] = init_piece(PIECE_TYPE_P3);
         printf("%d\n", pieces[i].defense);
     }
+
+    // char message[65];
+    TroupNotation message;
+    strcpy(message, "0000995/0000020/0000600/00000400/0000030/0000000/0000060/0000020");
+    printf("%s\n", message);
+
 
     DISPLAY_SUCCESS();
 

@@ -2,6 +2,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
 
 Piece init_piece(const PieceType type) {
     switch (type) {
@@ -25,4 +26,10 @@ Piece init_piece(const PieceType type) {
             fprintf(stderr, "Invalid piece type: %d\n", type);
             exit(EXIT_FAILURE);
     }
+}
+
+void solve_battle(const BattleStateNotation initial_state, BattleLogNotation *battle_log) {
+    srand(time(NULL));
+    // Deciding who goes first
+
 }
