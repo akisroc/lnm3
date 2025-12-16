@@ -42,20 +42,24 @@ typedef char BattleStateNotation[134];
  */
 typedef char BattleLogNotation[134 * NUMBER_OF_PHASES_IN_BATTLE];
 
-typedef struct Piece {
+typedef int Troup[8];
+
+typedef struct PieceArchetype {
     const unsigned short int attack;
     const unsigned short int defense;
     const unsigned short int speed;
     const bool distance;
-} Piece;
+} PieceArchetype;
 
-#define P1 (Piece) { .attack = 4, .defense = 7, .speed = 85, .distance = false }
-#define P2 (Piece) { .attack = 3, .defense = 5, .speed = 86, .distance = true }
-#define P3 (Piece) { .attack = 5, .defense = 9, .speed = 95, .distance = false }
-#define P4 (Piece) { .attack = 5, .defense = 7, .speed = 84, .distance = true }
-#define P5 (Piece) { .attack = 18, .defense = 8, .speed = 80, .distance = false }
-#define P6 (Piece) { .attack = 10, .defense = 7, .speed = 98, .distance = true }
-#define P7 (Piece) { .attack = 24, .defense = 16, .speed = 88, .distance = false }
-#define P8 (Piece) { .attack = 19, .defense = 13, .speed = 90, .distance = true }
+#define NB_OF_PIECES_ARCHETYPES 8
+#define P1 (PieceArchetype) { .attack = 4, .defense = 7, .speed = 85, .distance = false }
+#define P2 (PieceArchetype) { .attack = 3, .defense = 5, .speed = 86, .distance = true }
+#define P3 (PieceArchetype) { .attack = 5, .defense = 9, .speed = 95, .distance = false }
+#define P4 (PieceArchetype) { .attack = 5, .defense = 7, .speed = 84, .distance = true }
+#define P5 (PieceArchetype) { .attack = 18, .defense = 8, .speed = 80, .distance = false }
+#define P6 (PieceArchetype) { .attack = 10, .defense = 7, .speed = 98, .distance = true }
+#define P7 (PieceArchetype) { .attack = 24, .defense = 16, .speed = 88, .distance = false }
+#define P8 (PieceArchetype) { .attack = 19, .defense = 13, .speed = 90, .distance = true }
+#define PIECES_ARCHETYPES (PieceArchetype[NB_OF_PIECES_ARCHETYPES]) { P1, P2, P3, P4, P5, P6, P7, P8 }
 
 #endif // LIBLNM3_TYPES_H
