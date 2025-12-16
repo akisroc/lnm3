@@ -34,12 +34,10 @@ typedef char TroupNotation[65];
 /**
  * String representation of the state of a battle. Example:
  *
- * 0000995/0000020/0000600/0000400/0000030/0000000/0000060/0000020 0000995/0000020/0000600/0000400/0000030/0000000/0000060/0000020 1 0
+ * 0000995/0000020/0000600/0000400/0000030/0000000/0000060/0000020 0000995/0000020/0000600/0000400/0000030/0000000/0000060/0000020
  *
  * First group is the attacker troup, in the same format as TroupNotation[65].
  * Second group is the defender troup.
- * Digit after third space tells if the battle is finished: 1 for yes, 0 for no.
- * Last digit after fourth space tells if the attacker won: 1 for yes, 0 for no.
  */
 typedef char BattleStateNotation[134];
 

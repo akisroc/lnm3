@@ -53,9 +53,19 @@ void test_serialize_troup(void) {
     ASSERT(strcmp(notation_buffer, "0000995/0000020/0000600/0000400/0000030/0000000/0000060/0000020") == 0);
 }
 
+void test_solve_battle(void) {
+    BattleStateNotation initial_battle_state = "0000995/0000020/0000600/0000400/0000030/0000000/0000060/0000020 0000995/0000020/0000600/0000400/0000030/0000000/0000060/0000020";
+    BattleLogNotation battle_log = {0};
+
+    bool battle_result = solve_battle(initial_battle_state, battle_log);
+
+    ASSERT(battle_result == 1 || battle_result == 0);
+}
+
 int main(void) {
     test_parse_troup();
     test_serialize_troup();
+    test_solve_battle();
 
     return 0;
 }

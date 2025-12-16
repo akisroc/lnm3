@@ -5,21 +5,44 @@
 #include <time.h>
 #include <string.h>
 
-// void solve_battle(const BattleStateNotation initial_state, BattleLogNotation *battle_log) {
-//     srand(time(NULL));
-//     // Deciding who goes first
+#define BINARY_RAND(void) rand() % 2 == 0
 
-// }
+__attribute__((constructor))
+static void lib_constructor(void) {
+    srand(time(nullptr));
+}
+
+bool solve_battle(const BattleStateNotation initial_state, BattleLogNotation battle_log) {
+    strcat(battle_log, initial_state);
+    Troup attacker_troup = {0};
+    Troup defender_troup = {0};
+    parse_battle_sate(initial_state, attacker_troup, defender_troup);
+
+    bool attacker_has_initiative = BINARY_RAND();
+    printf("%d\n", attacker_has_initiative);
+
+    return true;
+}
 
 void parse_troup(const TroupNotation troup_notation, Troup troup) {
     TroupNotation str_buffer = {0};
     strcpy(str_buffer, troup_notation);
 
     char *token = strtok(str_buffer, "/");
-    for (unsigned short int i = 0; token != NULL; ++i) {
+    for (size_t i = 0; token != NULL; ++i) {
         troup[i] = atof(token);
         token = strtok(nullptr, "/");
     }
+}
+
+void parse_battle_sate(const BattleStateNotation battle_state_notation, Troup attacker_troup, Troup defender_troup) {
+    BattleStateNotation battle_state_notation_buffer = {0};
+    strcpy(battle_state_notation_buffer, battle_state_notation);
+
+    char *token = strtok(battle_state_notation_buffer, " ");
+    parse_troup(token, attacker_troup);
+    token = strtok(nullptr, " ");
+    parse_troup(token, defender_troup);
 }
 
 void serialize_troup(const Troup troup, const size_t troup_size, TroupNotation troup_notation) {
@@ -32,7 +55,3 @@ void serialize_troup(const Troup troup, const size_t troup_size, TroupNotation t
         }
     }
 }
-
-// void solve_battle(const BattleStateNotation initial_state, BattleLogNotation *battle_log) {
-//
-// }
