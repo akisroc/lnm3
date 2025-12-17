@@ -11,7 +11,7 @@ defmodule Notation do
   possibilites to never become a constraint (players will never get to
   troups of 9 millons pieces).
   """
-  def is_unit_notation(a) do
+  def unit_notation?(a) do
     a |> String.match?(~r/^[0-9]{7}$/)
   end
 
@@ -23,7 +23,7 @@ defmodule Notation do
   This example features a troup of 995 P1s, 20 P2s, 600 P3s, 400 P4s,
   30 P5s, no P6s, 60 P7s and 20 P8s.
   """
-  def is_troup_notation(a) do
+  def troup_notation?(a) do
     a |> String.match?(~r/^(?:[0-9]{7}\/){7}[0-9]{7}$/)
   end
 
@@ -35,7 +35,7 @@ defmodule Notation do
   First group is the attacker troup, in the same format as TroupNotation[65].
   Second group is the defender troup.
   """
-  def is_battle_state_notation(a) do
+  def battle_state_notation?(a) do
     a |> String.match?(~r/^(?:[0-9]{7}\/){7}[0-9]{7} (?:[0-9]{7}\/){7}[0-9]{7}$/)
   end
 
@@ -72,10 +72,24 @@ defmodule Notation do
   """
   def parse(a) do
     cond do
-      is_unit_notation(a) -> a |> String.to_integer()
-      is_troup_notation(a) -> a |> String.split("/") |> Enum.map(fn x -> parse(x) end)
-      is_battle_state_notation(a) -> a |> String.split(" ") |> Enum.map(fn x -> parse(x) end)
-      true -> raise ArgumentError, message: "Invalid notation format"
+      unit_notation?(a) ->
+        a |> String.to_integer()
+      troup_notation?(a) ->
+        a |> String.split("/") |> Enum.map(fn x -> parse(x) end)
+      battle_state_notation?(a) ->
+        a |> String.split(" ") |> Enum.map(fn x -> parse(x) end)
+      true ->
+        raise ArgumentError, message: "Invalid notation format"
+    end
+  end
+
+  def serialise(i) when is_integer(i) do
+    a |> Integer.to_string() |> String.pad_leading(7, "0")
+  end
+  def serialise(x) when is_list(x) do
+    case  do
+       ->
+        
     end
   end
 
