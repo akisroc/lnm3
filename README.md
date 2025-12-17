@@ -67,8 +67,9 @@ But I eventually stopped on Gleam. Because:
 - Imperative paradigm, clear syntax and garbage
   collection make it easy to read for uninitiated users.
   Won on Elixir.
-- Excellent tooling, kinda like Rust’s Cargo
-- No OOP is my way.
+- Excellent tooling, kinda like Rust’s Cargo.
+- Good IDE support.
+- No OOP.
 - Hype + stability: while new, this techno can safely
   grow without the risk of becoming a ghost land like D or Nim,
   since it will always be backed by the very alive and stable
