@@ -1,29 +1,25 @@
-# liblnm3
+# Liblnm3
 
-[![Package Version](https://img.shields.io/hexpm/v/liblnm3)](https://hex.pm/packages/liblnm3)
-[![Hex Docs](https://img.shields.io/badge/hex-docs-ffaff3)](https://hexdocs.pm/liblnm3/)
+**TODO: Add description**
 
-```sh
-gleam add liblnm3@1
-```
-```gleam
-import liblnm3
+## Installation
 
-pub fn main() -> Nil {
-  // TODO: An example of the project in use
-}
-```
+If [available in Hex](https://hex.pm/docs/publish), the package can be installed
+by adding `liblnm3` to your list of dependencies in `mix.exs`:
 
-Further documentation can be found at <https://hexdocs.pm/liblnm3>.
-
-## Development
-
-```sh
-gleam run   # Run the project
-gleam test  # Run the tests
+```elixir
+def deps do
+  [
+    {:liblnm3, "~> 0.1.0"}
+  ]
+end
 ```
 
-## Why Gleam?
+Documentation can be generated with [ExDoc](https://github.com/elixir-lang/ex_doc)
+and published on [HexDocs](https://hexdocs.pm). Once published, the docs can
+be found at <https://hexdocs.pm/liblnm3>.
+
+## Why Elixir?
 
 This library aims to be shared between backend and frontend, using
 the same codebase.
@@ -48,30 +44,29 @@ I had some candidates:
   not so great and ecosystem is messy, doc and online resources are messy, and
   sometimes difficult to debug when doing more than crushing numbers in a Jupyter
   Notebook (performance pitfalls, hidden memory allocations, etc.)
-- Elixir: nothing bad to say, Elixir is the dope. But the functional paradigm
-  could make it hard to adopt for community and enthusiastic
-  contributors.
-- Node/Bun: It’s directly JS so no need for WASM, that’s part of my main pro
-  stack, and I don’t hate it as a language/techno, kinda even like it, but…
-  ecosystem is unstable hell and I want to keep long-run personal projects far
-  from this mess.
-- Crystal: excellent candidate, having very good perf, WASM support,
+- Node/Bun: it’s directly JS so the lib could be shared with frontend without WASM.
+  Also Node is part of my main pro stack, and I don’t hate it as a language/techno,
+  kinda even like it, but… ecosystem is unstable hell and I want to keep long-run
+  personal projects far from this mess.
+- Crystal: excellent candidate, having very good perf, stable WASM support,
   readiblity. I use it for pro and like writing it.
+- Gleam: young, promising, runs on BEAM, excellent tooling. Kind of a
+  high level Rust. And compiles to JavaScript, which is its killer feature,
+  I believe. But compiling to JavaScript would cut me from the stable
+  Erlang/Elixir ecosystem, which is a dangerous bet. So I didn’t really see
+  the point in using it instead of Erlang or Elixir.
+- Elixir: well, Elixir is the dope!
 
-But I eventually stopped on Gleam. Because:
+So I stopped on Elixir. Because:
 
 - Fast enough.
-- Erlang/Elixir ecosystem.
+- Erlang/Elixir ecosystem is paradise.
 - Killer pipeline operator `|>`. Won on Crystal.
-- Compile to JavaScript so no need for WASM.
-- Imperative paradigm, clear syntax and garbage
-  collection make it easy to read for uninitiated users.
-  Won on Elixir.
-- Excellent tooling, kinda like Rust’s Cargo.
-- Good IDE support.
-- No OOP.
-- Hype + stability: while new, this techno can safely
-  grow without the risk of becoming a ghost land like D or Nim,
-  since it will always be backed by the very alive and stable
-  BEAM ecosystem, so I’m not afraid of investing time and commit
-  a project in it.
+- Clear, high level rubyish syntax, and garbage collection, make
+  it easy to read for uninitiated users.
+- Excellent tooling, all hail Mix.
+- Good and well maintained IDE/editor support with LSP.
+- Stability: Erlang/Elixir is niche, but a solid niche, running
+  behind Discord, Whatsapp, Spotify, etc. It will never become a
+  ghost unmaintained land like less loved niches (D, Nim, etc.),
+  so I’m not afraid of investing time and commit a project in it.

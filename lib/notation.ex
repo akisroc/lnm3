@@ -64,7 +64,8 @@ defmodule Notation do
   Last two digits must be 0 for all lines before the last one, as the battle
   was not finished and the winner was not determined yet.
   """
-  # def is_battle_log_notation
+  def is_battle_log_notation do
+  end
 
   @doc """
   Parse notation to data
