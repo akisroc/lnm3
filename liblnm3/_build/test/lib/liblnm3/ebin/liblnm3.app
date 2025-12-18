@@ -1,0 +1,1 @@
+{application,liblnm3,[{modules,['Elixir.Notation']},{optional_applications,[]},{applications,[kernel,stdlib,elixir,logger]},{description,"liblnm3"},{registered,[]},{vsn,"0.1.0"}]}.
