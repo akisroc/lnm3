@@ -21,8 +21,8 @@ defmodule Notation do
 
   "0000995/0000020/0000600/0000400/0000030/0000000/0000060/0000020"
 
-  This example features a troup of 995 P1s, 20 P2s, 600 P3s, 400 P4s,
-  30 P5s, no P6s, 60 P7s and 20 P8s, all delimited by a slash character `/`.
+  This example features a troup of 995 B1s, 20 B2s, 600 B3s, 400 B4s,
+  30 B5s, no B6s, 60 B7s and 20 B8s, all delimited by a slash character `/`.
 
   --------
 
@@ -41,25 +41,37 @@ defmodule Notation do
   The notation for a **battle log** looks like this
 
   0000995/0000020/0000600/0000400/0000030/0000000/0000060/0000020 0000995/0000020/0000600/0000400/0000030/0000000/0000060/0000020\n
-  P3/p1/0000060/0000080 p6/P6/0000060/0000040 […]\n
-  P3/p1/0000060/0000080 p6/P6/0000060/0000040 […]\n
-  P3/p1/0000060/0000080 p6/P6/0000060/0000040 […]\n
+  B3/b1/0000060/0000080 b6/B6/0000060/0000040 […]\n
+  B3/b1/0000060/0000080 b6/B6/0000060/0000040 […]\n
+  B3/b1/0000060/0000080 b6/B6/0000060/0000040 […]\n
   0000400/0000005/0000600/0000400/0000030/0000000/0000060/0000020 0000995/0000020/0000400/00000000/0000020/0000000/0000060/0000020\n
   1
 
   Lines end in line breaks `\n`.
 
-  – First line is the initial battle state.
-  – Next lines are the battle phases.
+  - First line is the initial battle state.
+  - Next lines are the battle phases.
       Each phase is cut in successives salvos separated by spaces ` `.
       Each salvo is cut as follows:
-        – Which piece archetype strikes (uppercase pieces (ex: P1) for attacker,
-          lowercase (ex: p1) for defender)
-        – Delimiter `/` then which piece archetype is striken
-        – Delimiter `/` then how many pieces are killed
-        – Delimiter `/` then how many pieces are wounded
-  – Last line is the result as a digit. 1 if attacker won. 0 if defender won.
+        - Which piece archetype strikes (uppercase pieces (ex: B1) for attacker,
+          lowercase (ex: b1) for defender)
+        - Delimiter `/` then which piece archetype is stricken
+        - Delimiter `/` then how many pieces are killed
+        - Delimiter `/` then how many pieces are wounded
+  - Last line is the result as a digit. 1 if attacker won. 0 if defender won.
     No trailing line break.
+
+  ----
+
+  /?\
+  Why the `B` letter for a piece archetype? (:
+  Ex: B1, B2, B3, etc.
+  Years ago, when LNM was a popular PHP game in France, what I call now "pieces"
+  by convention were soldiers trained in barracks. The word used in french for
+  these barracks was "Bâtiment", so players were used to design these soldiers
+  archetypes by B1, B3, B8, etc.
+  "Une armée de B1 et B3" was a thing!
+  I kept this naming tradition in the codebase by respect to the old LNM.
   """
 
   @doc """
@@ -131,7 +143,7 @@ defmodule Notation do
     iex> Notation.unit_count?(-45)
     false
   """
-  @spec unit_count?(integer()) :: boolean()
+  @spec unit_count?(non_neg_integer()) :: boolean()
   def unit_count?(i), do: is_integer(i) && i >= 0 && i <= 9999999
 
   @doc """
@@ -146,7 +158,7 @@ defmodule Notation do
     iex> Notation.troup_list?([45, 22, 30])
     false
   """
-  @spec troup_list?([integer()]) :: boolean()
+  @spec troup_list?([non_neg_integer()]) :: boolean()
   def troup_list?(l), do: is_list(l) && length(l) === 8 && l |> Enum.all?(&unit_count?/1)
 
   @doc """
@@ -161,7 +173,7 @@ defmodule Notation do
     iex> Notation.battle_state_list?([[75, 20], [1], [0, 0, 60220]])
     false
   """
-  @spec battle_state_list?([[integer()]]) :: boolean()
+  @spec battle_state_list?([[non_neg_integer()]]) :: boolean()
   def battle_state_list?(l), do: is_list(l) && length(l) === 2 && l |> Enum.all?(&troup_list?/1)
 
   @doc """
@@ -178,6 +190,7 @@ defmodule Notation do
     iex> Notation.parse("0000995/0000020/0000600/0000400/0000030/0000000/0000060/0000020 0000995/0000020/0000600/0000400/0000030/0000000/0000060/0000020")
     [[995, 20, 600, 400, 30, 0, 60, 20], [995, 20, 600, 400, 30, 0, 60, 20]]
   """
+  @spec parse(String.t()) :: non_neg_integer() | [non_neg_integer()] | [[non_neg_integer()]]
   def parse(a) do
     cond do
       unit_notation?(a) -> a |> String.to_integer()
@@ -195,6 +208,7 @@ defmodule Notation do
     iex> Notation.serialise(45)
     "0000045"
   """
+  @spec serialise(non_neg_integer() | [non_neg_integer()] | [[non_neg_integer()]]) :: String.t()
   def serialise(x) do
     cond do
       unit_count?(x) -> x |> Integer.to_string() |> String.pad_leading(7, "0")
