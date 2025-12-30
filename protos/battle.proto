@@ -1,5 +1,9 @@
 syntax = "proto3";
 
+package battle;
+
+option go_package = "gateway/pb/battle";
+
 service BattleService {
   rpc SolveBattle (BattleRequest) returns (BattleResponse);
 }
