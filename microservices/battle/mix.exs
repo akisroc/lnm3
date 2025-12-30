@@ -1,17 +1,17 @@
-defmodule Liblnm3.MixProject do
+defmodule Battle.MixProject do
   use Mix.Project
 
   def project do
     [
-      app: :liblnm3,
-      name: "liblnm3",
+      app: :battle,
+      name: "battle",
       version: "0.1.0",
       elixir: "~> 1.19",
       start_permanent: Mix.env() == :prod,
       deps: deps(),
-      source_url: "https://github.com/akisroc/liblnm3",
+      source_url: "https://github.com/akisroc/lnm3",
       docs: [
-        main: "akisroc/liblnm3",
+        main: "akisroc/lnm3",
         extras: ["README.md", "LICENSE"]
       ]
     ]
