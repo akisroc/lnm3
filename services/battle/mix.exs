@@ -20,7 +20,8 @@ defmodule Battle.MixProject do
   # Run "mix help compile.app" to learn about applications.
   def application do
     [
-      extra_applications: [:logger]
+      extra_applications: [:logger],
+      mod: {Battle.Application, []}
     ]
   end
 
@@ -34,9 +35,9 @@ defmodule Battle.MixProject do
         runtime: false,
         warn_if_outdated: true,
         extras: ["README.md", "LICENSE"]
-      }
-      # {:dep_from_hexpm, "~> 0.3.0"},
-      # {:dep_from_git, git: "https://github.com/elixir-lang/my_dep.git", tag: "0.1.0"}
+      },
+      {:grpc, "~> 0.11"},
+      {:protobuf, "~> 0.14"}
     ]
   end
 end

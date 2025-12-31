@@ -1,0 +1,87 @@
+services:
+
+  # --- SERVICE AUTH ---
+  auth:
+    build:
+      context: ./services/auth
+      dockerfile: Dockerfile
+    container_name: service-auth
+    volumes:
+      - ./services/auth:/app
+    environment:
+      - DATABASE_URL=postgres://postgres:auth_pass@db-auth:5432/auth_db?sslmode=disable
+      - SECRET_KEY=auth_secret
+      - PORT=50051
+    depends_on:
+      db-auth:
+        condition: service_healthy
+    ports:
+      - "50051:50051" # gRPC
+
+  db-auth:
+    image: postgres:18-alpine
+    container_name: db-auth
+    environment:
+      POSTGRES_DB: user
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: auth_pass
+    ports:
+      - "5431:5432"
+    volumes:
+      - auth_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d auth_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # --- SERVICE PLATFORM ---
+  # platform:
+  #   build:
+  #     context: ./services/platform
+  #     dockerfile: Dockerfile
+  #   container_name: service-platform
+  #   volumes:
+  #     - ./services/platform:/app
+  #   environment:
+  #     - DATABASE_URL=ecto://postgres:platform_pass@db-platform/platform_db
+  #     - AUTH_SERVICE_ADDR=auth:50051 # gRPC
+  #     - SECRET_KEY_BASE=generated_secret_key
+  #   depends_on:
+  #     - auth:
+  #         condition: service_started
+  #     - db-platform:
+  #         condition: service_healthy
+  #   ports:
+  #     - "4000:4000"
+
+  # db-platform:
+  #   build: postgres:18-alpine
+  #   container_name: db-platform
+  #   environment:
+  #     - POSTGRES_DB=platform_db
+  #     - POSTGRES_PASSWORD=platform_pass
+  #   volumes:
+  #     - platform_data:/var/lib/postgresql/data
+  #   healthcheck:
+  #     test: [ "CMD-SHELL", "pg_isready -U postgres -d platform_db" ]
+  #     interval: 5s
+  #     timeout: 5s
+  #     retries: 5
+
+  # --- FRONTEND ---
+  # frontend:
+  #   build:
+  #     context: ./frontend
+  #     dockerfile: Dockerfile
+  #   container_name: svelte-frontend
+  #   environment:
+  #     - PUBLIC_API_URL=http://localhost:4000
+  #   ports:
+  #     - "5173:5173"
+  #   depends_on:
+  #     - platform
+
+volumes:
+  auth_data:
+  # platform_data:
