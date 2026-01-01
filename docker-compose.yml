@@ -43,6 +43,19 @@ services:
        timeout: 5s
        retries: 5
 
+  # --- SERVICE ARCHIVE ---
+   archive:
+     build: .
+     ports:
+       - "8100:8100"  # PHP / FrankenPHP
+       - "8001:8001"  # Datasette
+     volumes:
+       - ./data:/app/data
+       - .:/app
+     environment:
+       - SERVER_NAME=:8100
+     restart: unless-stopped
+
    adminer:
      image: adminer
      container_name: lnm3_platform_adminer

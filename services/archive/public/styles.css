@@ -1,0 +1,19 @@
+/* --- STYLES --- */
+/* --------- */
+* {
+  box-sizing: border-box;
+  outline: none;
+}
+
+img {
+  max-width: 100%;
+}
+
+a {
+  text-decoration: none;
+  font-weight: bold;
+  color: red;
+}
+a:hover {
+  color: darkred;
+}
