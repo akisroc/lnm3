@@ -1,8 +1,9 @@
 defmodule Platform.Accounts.User do
   use Ecto.Schema
   import Ecto.Changeset
+  import Platform.Utils.SlugUtils
 
-  @username_regex ~r/^[ a-zA-Z0-9éÉèÈêÊëËäÄâÂàÀïÏöÖôÔüÜûÛçÇ\'’\-_\.]+$/
+  @username_regex ~r/^[ a-zA-Z0-9éÉèÈêÊëËäÄâÂàÀïÏöÖôÔüÜûÛçÇ\'’\-_\.&]+$/
   @email_regex ~r/^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/
   @url_regex ~r/^https?:\/\/[\w\d\-._~:?#\[\]@!$&'()*+,;=%\/]+$/
   @slug_regex ~r/^[a-z0-9]+(?:-[a-z0-9]+)*$/
@@ -36,7 +37,7 @@ defmodule Platform.Accounts.User do
     |> update_change(:username, &String.trim/1)
     |> validate_length(:username, min: 1, max: 30)
     |> validate_format(:username, @username_regex)
-    |> generate_slug()
+    |> generate_unique_slug(:username)
     |> validate_format(:slug, @slug_regex)
 
     |> update_change(:email, &String.trim/1)
@@ -56,14 +57,6 @@ defmodule Platform.Accounts.User do
   defp hash_password(changeset) do
     if password = get_change(changeset, :password) do
       put_change(changeset, :password, Argon2.hash_pwd_salt(password, argon2_config()))
-    else
-      changeset
-    end
-  end
-
-  defp generate_slug(changeset) do
-    if username = get_change(changeset, :username) do
-      put_change(changeset, :slug, Slugger.slugify_downcase(username))
     else
       changeset
     end

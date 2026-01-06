@@ -46,7 +46,7 @@ CREATE TABLE "users" (
   "is_removed" bool NOT NULL DEFAULT (false),
   "inserted_at" timestamp NOT NULL DEFAULT (CURRENT_TIMESTAMP),
   "updated_at" timestamp NOT NULL DEFAULT (CURRENT_TIMESTAMP),
-  CONSTRAINT "chk_users_username_format" CHECK (username ~ '^[ a-zA-Z0-9éÉèÈêÊëËäÄâÂàÀïÏöÖôÔüÜûÛçÇ''’\-_\.]+$'),
+  CONSTRAINT "chk_users_username_format" CHECK (username ~ '^[ a-zA-Z0-9éÉèÈêÊëËäÄâÂàÀïÏöÖôÔüÜûÛçÇ''’\-_\.&]+$'),
   CONSTRAINT "chk_users_email_format" CHECK (email ~* '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$'),
   CONSTRAINT "chk_users_slug_format" CHECK (slug ~ '^[a-z0-9]+(?:-[a-z0-9]+)*$')
 );
@@ -54,9 +54,9 @@ CREATE TABLE "users" (
 CREATE TABLE "kingdoms" (
   "id" uuid PRIMARY KEY,
   "user_id" uuid NOT NULL,
-  "leader_id" uuid NOT NULL,
-  "name" varchar(31) UNIQUE NOT NULL,
-  "slug" varchar(63) UNIQUE NOT NULL,
+  "leader_id" uuid,
+  "name" varchar(63) UNIQUE NOT NULL,
+  "slug" varchar(127) UNIQUE NOT NULL,
   "fame" numeric(12,3) NOT NULL DEFAULT (30000.0),
   "defense_troup" integer[] NOT NULL DEFAULT '{0, 0, 0, 0, 0, 0, 0, 0}',
   "attack_troup" integer[] NOT NULL DEFAULT '{0, 0, 0, 0, 0, 0, 0, 0}',
