@@ -1,38 +1,60 @@
-# sv
+# Nuxt Starter Template
 
-Everything you need to build a Svelte project, powered by [`sv`](https://github.com/sveltejs/cli).
+[![Nuxt UI](https://img.shields.io/badge/Made%20with-Nuxt%20UI-00DC82?logo=nuxt&labelColor=020420)](https://ui.nuxt.com)
 
-## Creating a project
+Use this template to get started with [Nuxt UI](https://ui.nuxt.com) quickly.
 
-If you're seeing this, you've probably already done this step. Congrats!
+- [Live demo](https://starter-template.nuxt.dev/)
+- [Documentation](https://ui.nuxt.com/docs/getting-started/installation/nuxt)
 
-```sh
-# create a new project in the current directory
-npx sv create
+<a href="https://starter-template.nuxt.dev/" target="_blank">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="https://ui.nuxt.com/assets/templates/nuxt/starter-dark.png">
+    <source media="(prefers-color-scheme: light)" srcset="https://ui.nuxt.com/assets/templates/nuxt/starter-light.png">
+    <img alt="Nuxt Starter Template" src="https://ui.nuxt.com/assets/templates/nuxt/starter-light.png">
+  </picture>
+</a>
 
-# create a new project in my-app
-npx sv create my-app
+> The starter template for Vue is on https://github.com/nuxt-ui-templates/starter-vue.
+
+## Quick Start
+
+```bash [Terminal]
+npm create nuxt@latest -- -t github:nuxt-ui-templates/starter
 ```
 
-## Developing
+## Deploy your own
 
-Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-name=starter&repository-url=https%3A%2F%2Fgithub.com%2Fnuxt-ui-templates%2Fstarter&demo-image=https%3A%2F%2Fui.nuxt.com%2Fassets%2Ftemplates%2Fnuxt%2Fstarter-dark.png&demo-url=https%3A%2F%2Fstarter-template.nuxt.dev%2F&demo-title=Nuxt%20Starter%20Template&demo-description=A%20minimal%20template%20to%20get%20started%20with%20Nuxt%20UI.)
 
-```sh
-npm run dev
+## Setup
 
-# or start the server and open the app in a new browser tab
-npm run dev -- --open
+Make sure to install the dependencies:
+
+```bash
+pnpm install
 ```
 
-## Building
+## Development Server
 
-To create a production version of your app:
+Start the development server on `http://localhost:3000`:
 
-```sh
-npm run build
+```bash
+pnpm dev
 ```
 
-You can preview the production build with `npm run preview`.
+## Production
 
-> To deploy your app, you may need to install an [adapter](https://svelte.dev/docs/kit/adapters) for your target environment.
+Build the application for production:
+
+```bash
+pnpm build
+```
+
+Locally preview production build:
+
+```bash
+pnpm preview
+```
+
+Check out the [deployment documentation](https://nuxt.com/docs/getting-started/deployment) for more information.
