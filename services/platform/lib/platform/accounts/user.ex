@@ -7,13 +7,20 @@ defmodule Platform.Accounts.User do
   @url_regex ~r/^https?:\/\/[\w\d\-._~:?#\[\]@!$&'()*+,;=%\/]+$/
   @slug_regex ~r/^[a-z0-9]+(?:-[a-z0-9]+)*$/
 
+  @argon2_config [
+    t_cost: 4,
+    m_cost: 18,  # 2^18 KiB => 256MiB
+    parallelism: 8,
+    argon2_type: 2  # Argon2id
+  ]
+
   @primary_key {:id, Platform.EctoTypes.UUIDv7, autogenerate: true}
   @foreign_key_type Platform.EctoTypes.UUIDv7
 
   schema "users" do
     field :username, :string
     field :email, :string
-    field :password, :string, redact: true # Hides password in logs
+    field :password, :string, redact: true  # Hides password in logs
 
     field :profile_picture, :string
     field :slug, :string
@@ -55,7 +62,7 @@ defmodule Platform.Accounts.User do
 
   defp hash_password(changeset) do
     if password = get_change(changeset, :password) do
-      put_change(changeset, :password, Argon2.hash_pwd_salt(password))
+      put_change(changeset, :password, Argon2.hash_pwd_salt(password, @argon2_config))
     else
       changeset
     end
