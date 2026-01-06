@@ -11,4 +11,7 @@ DROP TABLE IF EXISTS protagonists;
 DROP TABLE IF EXISTS sessions;
 DROP TABLE IF EXISTS users;
 DROP TYPE IF EXISTS platform_theme_enum;
+DROP FUNCTION IF EXISTS is_valid_battle_log(jsonb);
+DROP FUNCTION IF EXISTS is_valid_unit_archetype(text);
+DROP VIEW IF EXISTS battle_log_notation_view;
 DROP EXTENSION IF EXISTS "uuid-ossp";

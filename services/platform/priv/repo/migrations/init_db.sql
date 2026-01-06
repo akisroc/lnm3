@@ -1,9 +1,38 @@
+-- Initial LNM3 Platform DB schema
+-- No `\n` after a `;`, to make the file easy to split in migrations scripts:
+-- will be ugly for functions but will stay readable.
+
+-- EXTENSIONS
+
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
+-- FUNCTIONS
+
+CREATE OR REPLACE FUNCTION is_valid_unit_archetype(unit_archetype text) RETURNS boolean AS $$
+BEGIN
+    RETURN unit_archetype IN ('B1', 'B2', 'B3', 'B4', 'B5', 'B6', 'B7', 'B8', 
+                         'b1', 'b2', 'b3', 'b4', 'b5', 'b6', 'b7', 'b8'); END; $$ LANGUAGE plpgsql IMMUTABLE;
+
+CREATE OR REPLACE FUNCTION is_valid_battle_log(log jsonb) RETURNS boolean AS $$
+BEGIN
+    IF jsonb_typeof(log) <> 'array' THEN RETURN FALSE; END IF; RETURN NOT EXISTS (
+        SELECT 1 
+        FROM jsonb_array_elements(log) AS elem
+        WHERE 
+            NOT (elem ? 'attacking_unit' AND elem ? 'defending_unit' AND elem ? 'kill_steps')
+            OR jsonb_typeof(elem->'kill_steps') <> 'array'
+            OR NOT is_valid_unit_archetype(elem->>'attacking_unit')
+            OR NOT is_valid_unit_archetype(elem->>'defending_unit')
+    ); END; $$ LANGUAGE plpgsql IMMUTABLE;
+
+-- TYPES
 
 CREATE TYPE "platform_theme_enum" AS ENUM (
   'dark',
   'light'
 );
+
+-- TABLES
 
 CREATE TABLE "users" (
   "id" uuid PRIMARY KEY,
@@ -29,8 +58,8 @@ CREATE TABLE "kingdoms" (
   "name" varchar(31) UNIQUE NOT NULL,
   "slug" varchar(63) UNIQUE NOT NULL,
   "fame" numeric(12,3) NOT NULL DEFAULT (30000.0),
-  "defense_troup" jsonb NOT NULL DEFAULT ('{"b1": 0, "b2": 0, "b3": 0, "b4": 0, "b5": 0, "b6": 0, "b7": 0, "b8": 0}'),
-  "attack_troup" jsonb NOT NULL DEFAULT ('{"b1": 0, "b2": 0, "b3": 0, "b4": 0, "b5": 0, "b6": 0, "b7": 0, "b8": 0}'),
+  "defense_troup" integer[] NOT NULL DEFAULT '{0, 0, 0, 0, 0, 0, 0, 0}',
+  "attack_troup" integer[] NOT NULL DEFAULT '{0, 0, 0, 0, 0, 0, 0, 0}',
   "is_active" bool NOT NULL DEFAULT (false),
   "is_removed" bool NOT NULL DEFAULT (false),
   "inserted_at" timestamp NOT NULL DEFAULT (CURRENT_TIMESTAMP),
@@ -38,25 +67,35 @@ CREATE TABLE "kingdoms" (
   CONSTRAINT "chk_kingdoms_name_format" CHECK (name ~ '^[ a-zA-Z0-9éÉèÈêÊëËäÄâÂàÀïÏöÖôÔüÜûÛçÇ''’\-]+$'),
   CONSTRAINT "chk_kingdoms_fame_positive" CHECK (fame >= 0.0),
   CONSTRAINT "chk_kingdoms_slug_format" CHECK (slug ~ '^[a-z0-9]+(?:-[a-z0-9]+)*$'),
-  CONSTRAINT "chk_kingdoms_defense_troup_structure" CHECK (defense_troup ?& ARRAY['b1', 'b2', 'b3', 'b4', 'b5', 'b6', 'b7', 'b8']),
-  CONSTRAINT "chk_kingdoms_attack_troup_structure" CHECK (attack_troup ?& ARRAY['b1', 'b2', 'b3', 'b4', 'b5', 'b6', 'b7', 'b8']),
-  CONSTRAINT "chk_kingdoms_defense_troup_units_count_positive" CHECK ((defense_troup->>'b1')::int >= 0 
-    AND (defense_troup->>'b2')::int >= 0 
-    AND (defense_troup->>'b3')::int >= 0 
-    AND (defense_troup->>'b4')::int >= 0 
-    AND (defense_troup->>'b5')::int >= 0 
-    AND (defense_troup->>'b6')::int >= 0 
-    AND (defense_troup->>'b7')::int >= 0 
-    AND (defense_troup->>'b8')::int >= 0),
-  CONSTRAINT "chk_kingdoms_attack_troup_units_count_positive" CHECK ((attack_troup->>'b1')::int >= 0 
-    AND (attack_troup->>'b2')::int >= 0 
-    AND (attack_troup->>'b3')::int >= 0 
-    AND (attack_troup->>'b4')::int >= 0 
-    AND (attack_troup->>'b5')::int >= 0 
-    AND (attack_troup->>'b6')::int >= 0 
-    AND (attack_troup->>'b7')::int >= 0 
-    AND (attack_troup->>'b8')::int >= 0)
+  CONSTRAINT "chk_kingdoms_attack_troup_structure" CHECK (array_ndims(attack_troup) = 1 AND array_length(attack_troup, 1) = 8),
+  CONSTRAINT "chk_kingdoms_attack_troup_positive_integers" CHECK (0 <= ALL(attack_troup)),
+  CONSTRAINT "chk_kingdoms_defense_troup_structure" CHECK (array_ndims(defense_troup) = 1 AND array_length(defense_troup, 1) = 8),
+  CONSTRAINT "chk_kingdoms_defense_troup_positive_integers" CHECK (0 <= ALL(defense_troup))
 );
+
+CREATE TABLE "battles" (
+  "id" uuid PRIMARY KEY,
+  "attacker_id" uuid,
+  "defender_id" uuid,
+  "attacker_initial_troup" integer[] NOT NULL,
+  "defender_initial_troup" integer[] NOT NULL,
+  "log" jsonb NOT NULL,
+  "attacker_final_troup" integer[] NOT NULL,
+  "defender_final_troup" integer[] NOT NULL,
+  "attacker_wins" bool NOT NULL,
+  "inserted_at" timestamp NOT NULL DEFAULT (CURRENT_TIMESTAMP),
+  CONSTRAINT "chk_battles_attacker_is_not_defender" CHECK (attacker_id <> defender_id),
+  CONSTRAINT "chk_battles_attacker_initial_troup_structure" CHECK (array_ndims(attacker_initial_troup) = 1 AND array_length(attacker_initial_troup, 1) = 8),
+  CONSTRAINT "chk_battles_defender_initial_troup_structure" CHECK (array_ndims(defender_initial_troup) = 1 AND array_length(defender_initial_troup, 1) = 8),
+  CONSTRAINT "chk_battles_attacker_final_troup_structure" CHECK (array_ndims(attacker_final_troup) = 1 AND array_length(attacker_final_troup, 1) = 8),
+  CONSTRAINT "chk_battles_defender_final_troup_structure" CHECK (array_ndims(defender_final_troup) = 1 AND array_length(defender_final_troup, 1) = 8),
+  CONSTRAINT "chk_battles_attacker_initial_troup_positive_integers" CHECK (0 <= ALL(attacker_initial_troup)),
+  CONSTRAINT "chk_battles_defender_initial_troup_positive_integers" CHECK (0 <= ALL(defender_initial_troup)),
+  CONSTRAINT "chk_battles_attacker_final_troup_positive_integers" CHECK (0 <= ALL(attacker_final_troup)),
+  CONSTRAINT "chk_battles_defender_final_troup_positive_integers" CHECK (0 <= ALL(defender_final_troup)),
+  CONSTRAINT "chk_log_integrity" CHECK (is_valid_battle_log(log))
+);
+
 
 CREATE TABLE "protagonists" (
   "id" uuid PRIMARY KEY,
@@ -168,11 +207,17 @@ CREATE TABLE "sessions" (
   "inserted_at" timestamp NOT NULL DEFAULT (CURRENT_TIMESTAMP)
 );
 
+-- INDEXES
+
 CREATE UNIQUE INDEX "idx_only_one_active_kingdom_per_user" ON "kingdoms" ("user_id") WHERE "is_active" = true;
 
 CREATE INDEX "idx_kingdoms_user_id" ON "kingdoms" ("user_id");
 
 CREATE INDEX "idx_kingdoms_leader_id" ON "kingdoms" ("leader_id");
+
+CREATE INDEX "idx_battles_attacker_id" ON "battles" ("attacker_id");
+
+CREATE INDEX "idx_battles_defender_id" ON "battles" ("defender_id");
 
 CREATE UNIQUE INDEX "idx_protagonists_id_user_id" ON "protagonists" ("id", "user_id");
 
@@ -204,11 +249,17 @@ CREATE INDEX "idx_posts_thread_id" ON "posts" ("thread_id");
 
 CREATE INDEX "sessions_user_id" ON "sessions" ("user_id");
 
+-- FOREIGN KEYS
+
 ALTER TABLE "kingdoms" ADD FOREIGN KEY ("user_id") REFERENCES "users" ("id");
 
 ALTER TABLE "kingdoms" ADD FOREIGN KEY ("leader_id") REFERENCES "protagonists" ("id");
 
 ALTER TABLE "kingdoms" ADD FOREIGN KEY ("leader_id", "user_id") REFERENCES "protagonists" ("id", "user_id");
+
+ALTER TABLE "battles" ADD FOREIGN KEY ("attacker_id") REFERENCES "kingdoms" ("id");
+
+ALTER TABLE "battles" ADD FOREIGN KEY ("defender_id") REFERENCES "kingdoms" ("id");
 
 ALTER TABLE "protagonists" ADD FOREIGN KEY ("user_id") REFERENCES "users" ("id");
 
@@ -245,3 +296,39 @@ ALTER TABLE "posts" ADD FOREIGN KEY ("user_id") REFERENCES "users" ("id");
 ALTER TABLE "posts" ADD FOREIGN KEY ("thread_id") REFERENCES "threads" ("id");
 
 ALTER TABLE "sessions" ADD FOREIGN KEY ("user_id") REFERENCES "users" ("id");
+
+-- VIEWS
+
+-- Todo: to be tested
+CREATE OR REPLACE VIEW battle_log_notation_view AS
+WITH raw_data AS (
+  SELECT 
+    id AS battle_id,
+    attacker_id,
+    defender_id,
+    split_part(log::text, '\n', 1) as line_initial,
+    split_part(log::text, '\n', 2) as line_log,
+    split_part(log::text, '\n', 3) as line_final,
+    (split_part(log::text, '\n', 4) = '1') as attacker_won
+  FROM battles
+),
+log_steps AS (
+  SELECT 
+    battle_id,
+    trim(s.step) as step_raw,
+    s.idx as step_order
+  FROM raw_data,
+  unnest(string_to_array(trim(line_log), ' ')) WITH ORDINALITY AS s(step, idx)
+)
+SELECT 
+    ls.battle_id,
+    ls.step_order,
+    split_part(ls.step_raw, '/', 1) as unit_1,
+    split_part(ls.step_raw, '/', 2) as unit_2,
+    format(
+        split_part(ls.step_raw, '/', 1),
+        split_part(ls.step_raw, '/', 2),
+        array_length(string_to_array(ls.step_raw, '/'), 1) - 2
+    ) as summary_text
+FROM log_steps ls
+WHERE ls.step_raw <> '';

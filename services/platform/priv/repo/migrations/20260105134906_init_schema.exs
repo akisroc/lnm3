@@ -13,6 +13,9 @@ defmodule Platform.Repo.Migrations.InitSchema do
   # Ecto cannot execute multiple `xxx;` SQL commands at once.
   # Have to split SQL into multiple subcommands when calling an
   # external file.
+  #
+  # The split is simple, so keep the SQL file simple to:
+  # no `\s*\n` after a `;`.
   defp execute_sql_file(path) do
     path
     |> File.read!()
