@@ -29,28 +29,29 @@ defmodule Platform.Accounts.Session do
   end
 
   def generate_session_token(user, ip_address, user_agent) do
-    token = :crypto.hash(:sha256, :crypto.strong_rand_bytes(32))
+    token_bytes = :crypto.strong_rand_bytes(32)
+    token_hashed = :crypto.hash(:sha256, token_bytes)
 
     {:ok, inet_addr} = :inet.parse_address(to_charlist(ip_address))
 
     Platform.Repo.insert!(%Platform.Accounts.Session{
       user_id: user.id,
-      token: token,
+      token: token_hashed,
       context: "session",
       ip_address: %Postgrex.INET{address: inet_addr},
       user_agent: user_agent,
       expires_at: expires_at(user)
     })
 
-    token
+    token_bytes
   end
 
   def get_user_by_session_token(token) do
     with {:ok, token_bin} <- Base.url_decode64(token, padding: false) do
-      hashed_token = :crypto.hash(:sha256, token_bin)
+      token_hashed = :crypto.hash(:sha256, token_bin)
 
       query = from s in Platform.Accounts.Session,
-        where: s.token == ^hashed_token,
+        where: s.token == ^token_hashed,
         where: s.expires_at > fragment("now()"),
         preload: [:user]
 
