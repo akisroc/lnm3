@@ -8,7 +8,8 @@ defmodule PlatformWeb.Endpoint do
     store: :cookie,
     key: "_platform_key",
     signing_salt: "platform_session",
-    same_site: "Lax"
+    same_site: "Lax",
+    secure: Mix.env() == :prod
   ]
 
   socket "/live", Phoenix.LiveView.Socket,
@@ -49,6 +50,8 @@ defmodule PlatformWeb.Endpoint do
   plug Plug.Head
   plug Plug.Session, @session_options
 
+  plug RemoteIp, headers: ["x-forwarded-for"]
+
   plug CORSPlug,
     origin: &PlatformWeb.Endpoint.cors_origins/0,
     credentials: true,
@@ -57,8 +60,6 @@ defmodule PlatformWeb.Endpoint do
     expose: []
 
   plug PlatformWeb.Router
-
-  plug RemoteIp, headers: ["x-forwarded-for"]
 
   @doc """
   Returns the list of allowed CORS origins based on the environment.

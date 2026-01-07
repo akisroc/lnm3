@@ -13,15 +13,17 @@ defmodule PlatformWeb.Router do
   scope "/", PlatformWeb do
     pipe_through :api
 
-    post "/register", UserController, :create
     post "/login", SessionController, :login
+    post "/register", UserController, :create
   end
 
+  # Todo: Other scope for private?
   # --- Private routes ---
   scope "/", PlatformWeb do
     pipe_through [:api, :auth]
 
-    # get "/me", UserController, :me
+    get "/me", UserController, :me
+    post "/logout", SessionController, :logout
   end
 
   # Enable LiveDashboard and Swoosh mailbox preview in development

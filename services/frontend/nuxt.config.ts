@@ -24,5 +24,12 @@ export default defineNuxtConfig({
         braceStyle: '1tbs'
       }
     }
+  },
+
+  runtimeConfig: {
+    public: {
+      // Todo
+      apiUrl: 'http://platform.localhost'
+    }
   }
 })

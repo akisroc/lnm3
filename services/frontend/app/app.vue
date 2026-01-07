@@ -37,6 +37,8 @@ useSeoMeta({
       </template>
 
       <template #right>
+        <UserMenu />
+
         <UColorModeButton />
 
         <UButton

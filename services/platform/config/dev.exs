@@ -19,7 +19,10 @@ config :platform, Platform.Repo,
 config :platform, PlatformWeb.Endpoint,
   # Binding to loopback ipv4 address prevents access from other machines.
   # Change to `ip: {0, 0, 0, 0}` to allow access from other machines.
-  http: [ip: {127, 0, 0, 1}, port: String.to_integer(System.get_env("PORT") || "4000")],
+  http: [
+    ip: if(System.get_env("DOCKER") == "true", do: {0, 0, 0, 0}, else: {127, 0, 0, 1}),
+    port: String.to_integer(System.get_env("PORT") || "4000")
+  ],
   check_origin: false,
   code_reloader: true,
   debug_errors: true,
@@ -54,9 +57,14 @@ config :platform, dev_routes: true
 
 # CORS origins for development
 config :platform, cors_origins: [
+  "http://localhost",
+  "http://www.localhost",
+  "http://platform.localhost",
+  "http://archive.localhost",
   "http://localhost:8000",
   "http://localhost:3000",
-  ~r/^http:\/\/localhost:\d+$/
+  ~r/^http:\/\/localhost(:\d+)?$/,
+  ~r/^http:\/\/.*\.localhost(:\d+)?$/
 ]
 
 # Do not include metadata nor timestamps in development logs

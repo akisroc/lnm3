@@ -25,7 +25,8 @@ services:
       PHX_HOST: ${PHX_HOST:-localhost}
       PHX_SERVER: "true"
       PORT: 4000
-      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:8000,http://localhost:3000}
+      DOCKER: "true"
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost,http://www.localhost,http://localhost:3000}
     depends_on:
       db:
         condition: service_healthy
