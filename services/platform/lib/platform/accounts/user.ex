@@ -64,7 +64,9 @@ defmodule Platform.Accounts.User do
 
   # Todo: Could (should?) be in global configs
   defp argon2_config() do
-    if Mix.env() in [:test, :dev] do
+    env = Application.get_env(:platform, :env, :prod)
+
+    if env in [:test, :dev] do
       [
         t_cost: 1,
         m_cost: 8,

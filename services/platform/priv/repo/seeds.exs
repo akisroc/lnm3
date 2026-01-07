@@ -34,7 +34,9 @@ Platform.Repo.transaction(fn ->
   end
 end)
 
-if Mix.env() in [:test, :dev] do
+env = Application.get_env(:platform, :env, :prod)
+
+if env in [:test, :dev] do
 
   # --- USERS ---
   Platform.Repo.transaction(fn ->

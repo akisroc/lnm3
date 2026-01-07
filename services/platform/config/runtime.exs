@@ -7,6 +7,9 @@ import Config
 # any compile-time configuration in here, as it won't be applied.
 # The block below contains prod specific runtime configuration.
 
+# Set environment for runtime
+config :platform, :env, config_env()
+
 # ## Using releases
 #
 # If you use `mix release`, you need to explicitly enable the server
