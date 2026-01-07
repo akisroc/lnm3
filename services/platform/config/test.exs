@@ -31,3 +31,6 @@ config :logger, level: :warning
 
 # Initialize plugs at runtime for faster test compilation
 config :phoenix, :plug_init_mode, :runtime
+
+# Disable CORS in tests
+config :platform, cors_origins: []

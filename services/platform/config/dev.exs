@@ -52,6 +52,13 @@ config :platform, PlatformWeb.Endpoint,
 # Enable dev routes for dashboard and mailbox
 config :platform, dev_routes: true
 
+# CORS origins for development
+config :platform, cors_origins: [
+  "http://localhost:8000",
+  "http://localhost:3000",
+  ~r/^http:\/\/localhost:\d+$/
+]
+
 # Do not include metadata nor timestamps in development logs
 config :logger, :default_formatter, format: "[$level] $message\n"
 

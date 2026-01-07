@@ -74,6 +74,16 @@ if config_env() == :prod do
     ],
     secret_key_base: secret_key_base
 
+  # CORS configuration for production
+  cors_origins =
+    System.get_env("CORS_ORIGINS")
+    |> case do
+      nil -> []
+      origins -> String.split(origins, ",")
+    end
+
+  config :platform, cors_origins: cors_origins
+
   # ## SSL Support
   #
   # To get SSL working, you will need to add the `https` key

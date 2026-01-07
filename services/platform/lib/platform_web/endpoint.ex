@@ -50,13 +50,20 @@ defmodule PlatformWeb.Endpoint do
   plug Plug.Session, @session_options
 
   plug CORSPlug,
-    origin: ["http://localhost:8000"],
+    origin: &PlatformWeb.Endpoint.cors_origins/0,
     credentials: true,
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    headers: ["Authorization", "Content-Type", "Accept", "Origin", "User-Agent", "DNT", "Cache-Control", "X-Mx-ReqToken", "Keep-Alive", "X-Requested-With", "If-Modified-Since"],
-    expose: ["set-cookie"]
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    headers: ["Authorization", "Content-Type", "Accept"],
+    expose: []
 
   plug PlatformWeb.Router
 
   plug RemoteIp, headers: ["x-forwarded-for"]
+
+  @doc """
+  Returns the list of allowed CORS origins based on the environment.
+  """
+  def cors_origins do
+    Application.get_env(:platform, :cors_origins, [])
+  end
 end
