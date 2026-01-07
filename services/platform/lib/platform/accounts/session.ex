@@ -74,11 +74,11 @@ defmodule Platform.Accounts.Session do
   end
 
   def delete_expired_sessions do
-    Platform.Repo.delete_all(
-      from(s in Platform.Accounts.Session, where: s.expires_at < fragment("now()"))
+    {count, _} = Platform.Repo.delete_all(
+      from s in Platform.Accounts.Session, where: s.expires_at < fragment("now()")
     )
 
-    :ok
+    {:ok, count}
   end
 
   # Todo: Shorter session for admins and GMs
