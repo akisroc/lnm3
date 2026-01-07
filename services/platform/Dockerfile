@@ -51,6 +51,10 @@ WORKDIR /app
 # Copy release from build stage
 COPY --from=build --chown=platform:platform /app/_build/prod/rel/platform ./
 
+# Copy entrypoint script
+COPY --chown=platform:platform entrypoint.sh ./
+RUN chmod +x entrypoint.sh
+
 # Switch to non-root user
 USER platform
 
@@ -65,5 +69,5 @@ ENV HOME=/app \
 HEALTHCHECK --interval=30s --timeout=3s --start-period=40s --retries=3 \
     CMD curl -f http://localhost:4000/ || exit 1
 
-# Start the application
-CMD ["bin/platform", "start"]
+# Use entrypoint script
+ENTRYPOINT ["./entrypoint.sh"]
