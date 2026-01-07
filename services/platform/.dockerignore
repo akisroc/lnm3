@@ -1,0 +1,45 @@
+# Git
+.git
+.gitignore
+
+# Mix artifacts
+/_build
+/deps
+/*.ez
+
+# Build artifacts
+erl_crash.dump
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# Test files
+/test
+/cover
+
+# Documentation
+/doc
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Temporary files
+/tmp
+*.tmp
+
+# Node (if any frontend assets)
+node_modules
+npm-debug.log
+
+# Logs
+*.log

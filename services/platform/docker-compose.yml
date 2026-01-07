@@ -1,0 +1,41 @@
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: pass
+      POSTGRES_DB: lnm3_platform
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U user"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  platform:
+    build: .
+    ports:
+      - "4000:4000"
+    environment:
+      DATABASE_URL: ecto://user:pass@db/lnm3_platform
+      SECRET_KEY_BASE: ${SECRET_KEY_BASE:-CHANGE_ME_IN_PRODUCTION_GENERATE_WITH_mix_phx.gen.secret}
+      PHX_HOST: ${PHX_HOST:-localhost}
+      PHX_SERVER: "true"
+      PORT: 4000
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:8000,http://localhost:3000}
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:4000/ || exit 1"]
+      interval: 30s
+      timeout: 3s
+      start_period: 40s
+      retries: 3
+
+volumes:
+  postgres_data:

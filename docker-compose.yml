@@ -1,34 +1,32 @@
 services:
 
   # --- SERVICE PLATFORM ---
-  #  platform:
-  #    build:
-  #      context: ./services/platform
-  #      dockerfile: Dockerfile
-  #      target: dev
-  #    container_name: lnm3_platform
-  #    restart: unless-stopped
-  #    environment:
-  #      SERVER_NAME: :80
-  #      DATABASE_URL: postgresql://user:pass@db-platform:5432/lnm3_platform?serverVersion=16&charset=utf8
-  #      APP_SECRET: ${APP_SECRET:-e9d7855c4fd2ff4d9cdc0b17b2602bce}
-  #      CADDY_GLOBAL_OPTIONS: debug
-  #    volumes:
-  #      - ./services/platform:/app:rw,z
-  #      - ./services/platform/docker/caddy:/config/caddy:rw,z
-  #      - platform_data:/app/var
-  #    ports:
-  #      - "8080:80" # HTTP
-  #      - "8443:443" # HTTPS
-  #      - "443:443/udp" # HTTP/3
-  #    depends_on:
-  #      db-platform:
-  #        condition: service_healthy
-  #    links:
-  #      - db-platform
+  platform:
+    build:
+      context: ./services/platform
+      dockerfile: Dockerfile
+    container_name: lnm3_platform
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: ecto://user:pass@db-platform:5432/lnm3_platform
+      SECRET_KEY_BASE: ${SECRET_KEY_BASE:-CHANGE_ME_IN_PRODUCTION_GENERATE_WITH_mix_phx_gen_secret_MINIMUM_64_CHARS}
+      PHX_HOST: ${PHX_HOST:-localhost}
+      PHX_SERVER: "true"
+      PORT: 4000
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:8000,http://localhost:3000}
+    ports:
+      - "4000:4000"
+    depends_on:
+      db-platform:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:4000/ || exit 1"]
+      interval: 30s
+      timeout: 3s
+      start_period: 40s
+      retries: 3
 
-  # Todo: Add Phoenix to Docker
-   db-platform:
+  db-platform:
      image: postgres:18-alpine
      container_name: lnm3_platform_db
      environment:
@@ -70,5 +68,4 @@ services:
   #     - platform
 
 volumes:
-  #  platform_data:
-   db_data:
+  db_data:
