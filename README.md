@@ -6,11 +6,10 @@ Multi-service application with Phoenix backend and frontend.
 
 ```
 lnm3/
-├── services/
-│   └── platform/          # Phoenix API (Elixir/Phoenix)
-└── frontend/              # Frontend applications
-    ├── nuxt/              # Nuxt.js app
-    └── sveltekit/         # SvelteKit app
+└── services/
+    ├── frontend/          # Frontend applications (Nuxt app)
+    ├── platform/          # Platform API (Elixir/Phoenix/PostgreSQL)
+    └── archive/           # Archive API (PHP/Symfony/SQLite)
 ```
 
 ## Quick Start
