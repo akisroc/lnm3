@@ -28,7 +28,7 @@ defmodule Platform.Game.Kingdom do
     |> cast(attrs, [:user_id, :name, :slug, :fame, :defense_troup, :attack_troup, :is_active, :is_removed])
     |> validate_required([:user_id, :name])
     |> unique_constraint([:name, :slug])
-    |> generate_unique_slug(:name)
+    |> generate_unique_slug(__MODULE__, :name)
     |> validate_length(:name, min: 1, max: 63)
     |> validate_length(:slug, min: 1, max: 127)
     |> validate_fame()

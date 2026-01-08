@@ -37,7 +37,7 @@ defmodule Platform.Accounts.User do
     |> update_change(:username, &String.trim/1)
     |> validate_length(:username, min: 1, max: 30)
     |> validate_format(:username, @username_regex)
-    |> generate_unique_slug(:username)
+    |> generate_unique_slug(__MODULE__, :username)
     |> validate_format(:slug, @slug_regex)
 
     |> update_change(:email, &String.trim/1)
