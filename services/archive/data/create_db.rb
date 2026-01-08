@@ -6,7 +6,7 @@ require 'digest'
 
 begin
 
-  db = SQLite3::Database.new "lnm_archive.db"
+  db = SQLite3::Database.new "lnm_archive.sqlite"
   puts "Database file created."
 
   db.execute_batch <<-SQL
@@ -23,6 +23,9 @@ begin
       content BLOB,
       created_at INTEGER
     );
+    CREATE INDEX idx_posts_topic_id ON posts(topic_id);
+    CREATE INDEX idx_posts_created_at ON posts(created_at);
+    CREATE INDEX idx_posts_author ON posts(author);
   SQL
 
   puts "Schema created."

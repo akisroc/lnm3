@@ -8,15 +8,22 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\JsonResponse;
-use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\StreamedJsonResponse;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
+use Symfony\Component\HttpFoundation\ResponseHeaderBag;
 use Symfony\Component\HttpKernel\Attribute\MapQueryParameter;
 use Symfony\Component\Routing\Attribute\Route;
 use App\Service\Database;
 
 class ApiController extends AbstractController
 {
-    public function __construct(private Database $db) {}
+    // 6 months
+    // Archive ata is static and eternal anyway
+    private const RESPONSES_MAX_AGE = 60 * 60 * 24 * 30 * 6;
+
+    public function __construct(
+        private readonly Database $db
+    ) {}
 
     #[Route('/topics', name: 'topics.list', methods: ['GET'])]
     public function topics(): StreamedJsonResponse
@@ -39,11 +46,11 @@ class ApiController extends AbstractController
             }
         };
 
-        return new StreamedJsonResponse($generator());
+        return $this->createStreamedResponse($generator());
     }
 
     #[Route('/topics/{id}', name: 'topics.view', methods: ['GET'])]
-    public function topic(string $id): JsonResponse
+    public function topic(string $id): JsonResponse | StreamedJsonResponse
     {
         $stmt = $this->db->pdo->prepare(
             'SELECT id, title FROM topics WHERE id = ?'
@@ -51,31 +58,30 @@ class ApiController extends AbstractController
         $stmt->execute([$id]);
         $topic = $stmt->fetch();
 
-        $stmt = $this->db->pdo->prepare(
-            'SELECT id, topic_id, position, author, content, created_at
-            FROM posts
-            WHERE topic_id = ?
-            ORDER BY created_at ASC'
-        );
-        $stmt->execute([$id]);
-        $posts = $stmt->fetchAll();
+        $generator = function () use ($id) {
+            $stmt = $this->db->pdo->prepare(
+                'SELECT id, topic_id, position, author, content, created_at
+                FROM posts
+                WHERE topic_id = ?
+                ORDER BY created_at ASC'
+            );
+            $stmt->execute([$id]);
 
+            while ($post = $stmt->fetch()) {
+                yield $post;
+            }    
+        };
+        
         if ($topic === false) {
             return new JsonResponse([
                 'message' => "No topic found for id “{$id}”"
             ], 404);
         }
 
-        if (empty($posts)) {
-            return new JsonResponse([
-                'message' => "No post found for topic with id “{$id}”"
-            ], 404);
-        }
-
-        return new JsonResponse([
+        return $this->createStreamedResponse([
             'id' => $topic['id'],
             'title' => $topic['title'],
-            'posts' => $posts
+            'posts' => $generator()
         ]);
     }
 
@@ -89,12 +95,13 @@ class ApiController extends AbstractController
         );
 
         if ($withoutTopicParam !== null && $withoutTopic === null) {
-            return new JsonResponse([
-                'message' => "The “without_topic” query parameter must be a valid boolean. Possible values: “1”, “true”, “on”, “yes”, “0”, “false”, “off”, “no”. “{$withoutTopicParam}” given."
-            ], 400);
+            return $this->createErrorResponse(
+                message: "The “without_topic” query parameter must be a valid boolean. Possible values: “1”, “true”, “on”, “yes”, “0”, “false”, “off”, “no”. “{$withoutTopicParam}” given.",
+                httpCode: 400
+            );
         }
 
-        $generator = function () use (&$withoutTopic): iterable {
+        $generator = function () use ($withoutTopic): iterable {
             $sql = '
                 SELECT id, topic_id, place, author, content, created_at
                 FROM posts
@@ -111,7 +118,7 @@ class ApiController extends AbstractController
             }
         };
 
-        return new StreamedJsonResponse($generator());
+        return $this->createStreamedResponse($generator());
     }
 
     #[Route('/authors', name: 'authors.list', methods: ['GET'])]
@@ -130,13 +137,30 @@ class ApiController extends AbstractController
             }
         };
 
-        return new StreamedJsonResponse($generator());
+        return $this->createStreamedResponse($generator());
     }
 
     #[Route('/downloads/database', name: 'downloads.database', methods: ['GET'])]
     public function downloadDatabase(
         #[Autowire('%app.db_path%')] string $dbPath
     ): BinaryFileResponse {
-        return new BinaryFileResponse($dbPath);
+        $this->db->pdo->exec('PRAGMA wal_checkpoint(FULL);');
+
+        return new BinaryFileResponse($dbPath, ResponseHeaderBag::DISPOSITION_ATTACHMENT);
+    }
+
+    private function createStreamedResponse(iterable $data): StreamedJsonResponse
+    {
+        $response = new StreamedJsonResponse($data);
+        $response->setPublic();
+        $response->setMaxAge(self::RESPONSES_MAX_AGE);
+        $response->setSharedMaxAge(self::RESPONSES_MAX_AGE);
+
+        return $response;
+    }
+
+    private function createErrorResponse(string $message, int $httpCode): JsonResponse
+    {
+        return new JsonResponse(['message' => $message], $httpCode);
     }
 }

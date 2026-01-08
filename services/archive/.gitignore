@@ -1,3 +1,5 @@
+*.sqlite-shm
+*.sqlite-wal
 
 ###> symfony/framework-bundle ###
 /.env.local
