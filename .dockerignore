@@ -1,0 +1,21 @@
+# --- Dependencies folders ---
+**/node_modules
+**/vendor
+**/deps
+**/_build
+**/.nuxt
+**/.output
+
+# --- Local data ---
+**/postgres_data
+**/var/files
+
+# --- Git & IDE ---
+.git
+.gitignore
+.idea
+.vscode
+*.swp
+
+# --- Dotenvs ---
+.env*

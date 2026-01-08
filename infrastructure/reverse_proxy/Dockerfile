@@ -1,12 +1,29 @@
-FROM nginx:alpine
+# --- BASE STAGE ---
+FROM traefik:3.6 AS base
 
-# Copy custom nginx configuration
-COPY nginx.conf /etc/nginx/nginx.conf
-COPY conf.d/ /etc/nginx/conf.d/
+HEALTHCHECK --interval=10s --timeout=2s --retries=3 \
+  CMD traefik healthcheck || exit 1
 
-# Expose port 80
 EXPOSE 80
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=3s --start-period=10s --retries=3 \
-    CMD nginx -t || exit 1
+# --- DEV STAGE ---
+FROM base AS dev
+
+CMD ["traefik", \
+     "--api.insecure=true", \
+     "--api.dashboard=true", \
+     "--providers.docker=true", \
+     "--providers.docker.exposedbydefault=false", \
+     "--entrypoints.web.address=:80", \
+     "--log.level=DEBUG"]
+
+EXPOSE 8080
+
+## --- PROD STAGE ---
+FROM base AS prod
+
+LABEL org.opencontainers.image.description="LNM3 Reverse Proxy"
+
+CMD ["traefik"]
+
+EXPOSE 443

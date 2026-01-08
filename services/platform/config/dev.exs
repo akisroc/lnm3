@@ -2,10 +2,6 @@ import Config
 
 # Configure your database
 config :platform, Platform.Repo,
-  username: "user",
-  password: "pass",
-  hostname: "localhost", # Todo: Add Phoenix to Docker
-  database: "lnm3_platform",
   stacktrace: true,
   show_sensitive_data_on_connection_error: true,
   pool_size: 10
@@ -23,6 +19,7 @@ config :platform, PlatformWeb.Endpoint,
     ip: if(System.get_env("DOCKER") == "true", do: {0, 0, 0, 0}, else: {127, 0, 0, 1}),
     port: String.to_integer(System.get_env("PORT") || "4000")
   ],
+  server: System.get_env("PHX_SERVER") == "true",
   check_origin: false,
   code_reloader: true,
   debug_errors: true,

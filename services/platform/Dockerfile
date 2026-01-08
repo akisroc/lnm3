@@ -1,73 +1,67 @@
-# Build stage
-FROM hexpm/elixir:1.17.3-erlang-27.1.2-alpine-3.20.3 AS build
+# --- BASE STAGE ---
+FROM elixir:1.19-alpine AS base
 
-# Install build dependencies
-RUN apk add --no-cache build-base git curl
+RUN apk add --no-cache build-base git
 
-# Set working directory
 WORKDIR /app
 
-# Install hex and rebar
-RUN mix local.hex --force && \
-    mix local.rebar --force
+RUN set -eux; \
+    mix local.hex --force; \
+    mix local.rebar --force;
 
-# Set build environment
+# --- DEV STAGE ---
+FROM base AS dev
+ENV MIX_ENV=dev
+
+RUN apk add --no-cache inotify-tools curl netcat-openbsd
+
+COPY mix.exs mix.lock ./
+RUN mix deps.get
+
+COPY . .
+
+RUN chmod +x scripts/wait-for-db.sh
+
+CMD ["scripts/wait-for-db.sh", "lnm3_database", "--", "sh", "-c", "mix ecto.migrate && mix phx.server"]
+
+HEALTHCHECK --interval=10s --timeout=2s --start-period=30s --retries=3 \
+  CMD nc -z 127.0.0.1 4000 || exit 1
+
+CMD ["mix", "phx.server"]
+
+# --- BUILDER STAGE ---
+FROM base AS builder
 ENV MIX_ENV=prod
 
-# Copy dependency files
 COPY mix.exs mix.lock ./
+RUN set -eux; \
+    mix deps.get --only prod; \
+    mix deps.compile;
 
-# Install dependencies
-RUN mix deps.get --only prod && \
-    mix deps.compile
-
-# Copy application code
 COPY config config
-COPY lib lib
+COPY assets assets
 COPY priv priv
+COPY lib lib
 
-# Compile application
-RUN mix compile
+RUN set -eux; \
+    mix assets.deploy; \
+    mix compile; \
+    mix release;
 
-# Create release
-RUN mix release
+# --- PROD STAGE ---
+FROM alpine:3.23 AS prod
+ENV MIX_ENV=prod
+ENV HOME=/app
+ENV PHX_SERVER=true
 
-# Runtime stage
-FROM alpine:3.20.3
+RUN apk add --no-cache libstdc++ openssl ncurses-libs ca-certificates netcat-openbsd
 
-# Install runtime dependencies
-RUN apk add --no-cache \
-    ncurses-libs \
-    libstdc++ \
-    libgcc \
-    openssl
+COPY --from=builder --chown=1000:1000 /app/_build/prod/rel/platform ./
 
-# Create non-root user
-RUN addgroup -g 1000 platform && \
-    adduser -D -u 1000 -G platform platform
+HEALTHCHECK --interval=30s --timeout=5s --start-period=30s --retries=3 \
+  CMD nc -z 127.0.0.1 4000 || exit 1
 
-WORKDIR /app
-
-# Copy release from build stage
-COPY --from=build --chown=platform:platform /app/_build/prod/rel/platform ./
-
-# Copy entrypoint script
-COPY --chown=platform:platform entrypoint.sh ./
-RUN chmod +x entrypoint.sh
-
-# Switch to non-root user
-USER platform
-
-# Expose port
+USER 1000
 EXPOSE 4000
 
-# Set environment variables
-ENV HOME=/app \
-    PHX_SERVER=true
-
-# Health check
-HEALTHCHECK --interval=30s --timeout=3s --start-period=40s --retries=3 \
-    CMD curl -f http://localhost:4000/ || exit 1
-
-# Use entrypoint script
-ENTRYPOINT ["./entrypoint.sh"]
+CMD ["bin/platform", "start"]

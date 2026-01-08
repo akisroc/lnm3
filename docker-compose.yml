@@ -1,5 +1,125 @@
-include:
-  - services/platform/docker-compose.yml
-  - services/archive/docker-compose.yml
-  - services/frontend/docker-compose.yml
-  - infrastructure/reverse_proxy/docker-compose.yml
+services:
+
+  # ----- /!\ -----
+  # --- DEV ONLY ---
+  # ----- /!\ -----
+
+  # This setup uses environment variables.
+  # The command `make setup` will `cp .env.example .env`.
+  # You can then edit this newly created `.env` if needed.
+
+  lnm3_reverse_proxy:
+    build:
+      context: ./infrastructure/reverse_proxy
+      target: dev
+    privileged: true
+    security_opt:
+      - label:disable
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    ports:
+      - "80:80"
+      - "8080:8080"
+    networks:
+      - front_network
+    depends_on:
+      lnm3_platform:
+        condition: service_healthy
+      lnm3_archive:
+        condition: service_healthy
+      lnm3_frontend:
+        condition: service_healthy
+
+  lnm3_database:
+    build:
+      context: ./infrastructure/database
+      target: dev
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    volumes:
+      - db-data:/var/lib/postgresql/data:rw
+    networks:
+      - database_network
+
+  lnm3_platform:
+    build:
+      context: ./services/platform
+      target: dev
+    restart: unless-stopped
+    environment:
+      MIX_ENV: ${MIX_ENV}
+      SECRET_KEY_BASE: ${SECRET_KEY_BASE}
+      DATABASE_URL: ${DATABASE_URL}
+      PHX_SERVER: ${PHX_SERVER}
+      PHX_HOST: ${PHX_HOST}
+      PORT: ${PORT}
+      DOCKER: ${DOCKER}
+      CORS_ORIGINS: ${CORS_ORIGINS}
+    volumes:
+      - ./services/platform:/app:rw,cached,z
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.lnm3_platform.rule=Host(`platform.localhost`)"
+      - "traefik.http.services.platform.loadbalancer.server.port=4000"
+      - "traefik.docker.network=front_network"
+    networks:
+      - front_network
+      - database_network
+    depends_on:
+      lnm3_database:
+        condition: service_healthy
+
+  lnm3_archive:
+    build:
+      context: ./services/archive
+      target: dev
+    restart: unless-stopped
+    environment:
+      APP_ENV: ${APP_ENV}
+      APP_SECRET: ${APP_SECRET}
+    volumes:
+      - ./services/archive:/app:rw,cached,z
+      - /app/var
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.lnm3_archive.rule=Host(`archive.localhost`)"
+      - "traefik.http.services.archive.loadbalancer.server.port=8000"
+    networks:
+      - front_network
+
+  lnm3_frontend:
+    build:
+      context: ./services/frontend
+      target: dev
+    restart: unless-stopped
+    environment:
+      NODE_ENV: ${NODE_ENV}
+      NUXT_PUBLIC_PLATFORM_URL: ${NUXT_PUBLIC_PLATFORM_URL}
+      NUXT_PUBLIC_ARCHIVE_URL: ${NUXT_PUBLIC_ARCHIVE_URL}
+      NUXT_PLATFORM_URL_INTERNAL: ${NUXT_PLATFORM_URL_INTERNAL}
+      NUXT_ARCHIVE_URL_INTERNAL: ${NUXT_ARCHIVE_URL_INTERNAL}
+    volumes:
+      - ./services/frontend:/app:rw,cached,z
+      - /app/node_modules
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.lnm3_frontend.rule=Host(`localhost`)"
+      - "traefik.http.services.frontend.loadbalancer.server.port=3000"
+    networks:
+      - front_network
+    depends_on:
+      lnm3_platform:
+        condition: service_healthy
+      lnm3_archive:
+        condition: service_healthy
+
+volumes:
+  db-data:
+
+networks:
+  front_network:
+    driver: bridge
+  database_network:
+    driver: bridge
