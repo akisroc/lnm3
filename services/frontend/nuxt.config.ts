@@ -9,6 +9,19 @@ export default defineNuxtConfig({
     enabled: true
   },
 
+  vite: {
+    server: {
+      hmr: {
+        protocol: "ws",
+        host: "localhost",
+        port: 80
+      },
+      watch: {
+        usePolling: true
+      }
+    }
+  },
+
   css: ['~/assets/css/main.css'],
 
   routeRules: {
@@ -27,9 +40,11 @@ export default defineNuxtConfig({
   },
 
   runtimeConfig: {
+    platformUrlInternal: "",
+    archiveUrlInternal: "",
     public: {
-      // Todo
-      apiUrl: 'http://platform.localhost'
+      platformUrl: "",
+      archiveUrl: ""
     }
   }
 })
