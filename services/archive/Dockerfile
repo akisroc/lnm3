@@ -13,6 +13,21 @@ RUN set -eux; \
     docker-php-ext-enable apcu opcache; \
     apk del .build-deps;
 
+# Logging only errors, not healthchecks
+RUN set -eux; \
+    { \
+        echo '[global]'; \
+        echo 'error_log = /proc/self/fd/2'; \
+        echo '[www]'; \
+        echo 'listen = 9000'; \
+        echo 'user = www-data'; \
+        echo 'group = www-data'; \
+        echo 'listen.owner = www-data'; \
+        echo 'listen.group = www-data'; \
+        echo 'pm.status_path = /status'; \
+        echo 'access.log = /dev/null'; \
+    } > /usr/local/etc/php-fpm.d/zz-docker.conf
+
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
 ENV COMPOSER_ALLOW_SUPERUSER=1
@@ -24,17 +39,27 @@ WORKDIR /app
 FROM base AS dev
 ENV APP_ENV=dev
 
-RUN apk add --no-cache $PHPIZE_DEPS linux-headers curl netcat-openbsd
+RUN apk add --no-cache $PHPIZE_DEPS linux-headers
 
 RUN set -eux; \
     pecl install xdebug; \
     docker-php-ext-enable xdebug;
+
 ENV XDEBUG_MODE=debug
 
-HEALTHCHECK --interval=10s --timeout=5s --start-period=5s --retries=3 \
-  CMD nc -z 127.0.0.1 8000 || exit 1
+COPY --chown=www-data:www-data composer.json composer.lock symfony.lock ./
+RUN composer install --no-interaction
 
-CMD ["php", "-S", "0.0.0.0:8000", "-t", "public"]
+COPY --chown=www-data:www-data . .
+
+RUN mkdir -p var/cache var/log && chown -R www-data:www-data var
+
+USER www-data
+
+HEALTHCHECK --interval=10s --timeout=5s --start-period=30s --retries=3 \
+  CMD SCRIPT_NAME=/status SCRIPT_FILENAME=/status REQUEST_METHOD=GET cgi-fcgi -bind -connect 127.0.0.1:9000 || exit 1
+
+CMD ["php-fpm"]
 
 # --- BUILDER STAGE ---
 FROM base AS builder
@@ -53,24 +78,24 @@ RUN set -eux; \
     composer dump-autoload --no-dev --classmap-authoritative; \
     composer dump-env prod; \
     composer run-script --no-dev post-install-cmd; \
-    chmod +x bin/console; sync;
+    chmod +x bin/console; \
+    sync;
 
 # --- PROD STAGE ---
 FROM base AS prod
 ENV APP_ENV=prod
 ENV APP_DEBUG=0
 
-RUN set -eux; \
-    echo "pm.status_path = /status" >> /usr/local/etc/php-fpm.d/zz-docker.conf
-
 COPY --from=builder --chown=www-data:www-data /app /app
 
 RUN mv "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini"
 COPY docker/php/opcache.ini $PHP_INI_DIR/app.conf.d/opcache.ini
 
-HEALTHCHECK --interval=10s --timeout=5s --start-period=5s --retries=3 \
+USER www-data
+
+HEALTHCHECK --interval=10s --timeout=5s --start-period=30s --retries=3 \
   CMD SCRIPT_NAME=/status SCRIPT_FILENAME=/status REQUEST_METHOD=GET cgi-fcgi -bind -connect 127.0.0.1:9000 || exit 1
 
-USER www-data
 EXPOSE 9000
+
 CMD ["php-fpm"]
