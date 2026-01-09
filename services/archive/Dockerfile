@@ -2,7 +2,7 @@
 FROM php:8.4-fpm-alpine AS base
 
 # Runtime deps
-RUN apk add --no-cache icu-libs libpq libzip file git fcgi
+RUN apk add --no-cache icu-libs libpq libzip file git netcat-openbsd
 
 # Build (install deps, compile, clean)
 RUN set -eux; \
@@ -13,22 +13,7 @@ RUN set -eux; \
     docker-php-ext-enable apcu opcache; \
     apk del .build-deps;
 
-# Logging only errors, not healthchecks
-RUN set -eux; \
-    { \
-        echo '[global]'; \
-        echo 'error_log = /proc/self/fd/2'; \
-        echo '[www]'; \
-        echo 'listen = 9000'; \
-        echo 'user = www-data'; \
-        echo 'group = www-data'; \
-        echo 'listen.owner = www-data'; \
-        echo 'listen.group = www-data'; \
-        echo 'pm.status_path = /status'; \
-        echo 'access.log = /dev/null'; \
-    } > /usr/local/etc/php-fpm.d/zz-docker.conf
-
-COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
+COPY --from=composer:2 /usr/bin/composer /usr/local/bin/composer
 
 ENV COMPOSER_ALLOW_SUPERUSER=1
 ENV PHP_INI_SCAN_DIR=":$PHP_INI_DIR/app.conf.d"
@@ -47,19 +32,19 @@ RUN set -eux; \
 
 ENV XDEBUG_MODE=debug
 
-COPY --chown=www-data:www-data composer.json composer.lock symfony.lock ./
-RUN composer install --no-interaction
+COPY composer.json composer.lock symfony.lock ./
+RUN composer install --no-interaction --no-scripts
 
-COPY --chown=www-data:www-data . .
+COPY . .
 
-RUN mkdir -p var/cache var/log && chown -R www-data:www-data var
+RUN mkdir -p var/cache var/log
 
-USER www-data
+HEALTHCHECK --interval=10s --timeout=3s --start-period=30s --retries=3 \
+  CMD nc -z 127.0.0.1 9000 || exit 1
 
-HEALTHCHECK --interval=10s --timeout=5s --start-period=30s --retries=3 \
-  CMD SCRIPT_NAME=/status SCRIPT_FILENAME=/status REQUEST_METHOD=GET cgi-fcgi -bind -connect 127.0.0.1:9000 || exit 1
+#CMD ["php-fpm", "-F"]
 
-CMD ["php-fpm"]
+CMD ["php", "-S", "0.0.0.0:9000", "-t", "public/"]
 
 # --- BUILDER STAGE ---
 FROM base AS builder
@@ -93,8 +78,8 @@ COPY docker/php/opcache.ini $PHP_INI_DIR/app.conf.d/opcache.ini
 
 USER www-data
 
-HEALTHCHECK --interval=10s --timeout=5s --start-period=30s --retries=3 \
-  CMD SCRIPT_NAME=/status SCRIPT_FILENAME=/status REQUEST_METHOD=GET cgi-fcgi -bind -connect 127.0.0.1:9000 || exit 1
+HEALTHCHECK --interval=30s --timeout=5s --start-period=40s --retries=3 \
+  CMD nc -z 127.0.0.1 9000 || exit 1
 
 EXPOSE 9000
 

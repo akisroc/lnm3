@@ -2,9 +2,9 @@
 # --- DEV ONLY ---
 # ----- /!\ -----
 
-EXEC_PHX=docker compose exec lnm3_platform
-EXEC_SF=docker compose exec lnm3_archive
-EXEC_NUXT=docker compose exec lnm3_frontend
+EXEC_PHX=docker compose exec platform
+EXEC_SF=docker compose exec archive
+EXEC_NUXT=docker compose exec frontend
 
 .PHONY: help setup up down restart logs ps shell-phx shell-nuxt db-migrate test
 
@@ -38,7 +38,7 @@ ps: ## Display all containers and their states
 	docker compose ps
 
 db-setup: ## Create, migrate and seed database
-	docker compose run --rm -e PHX_SERVER=false lnm3_platform mix ecto.setup
+	docker compose run --rm -e PHX_SERVER=false platform mix ecto.setup
 
 db-seed: ## Seed database
 	$(EXEC_PHX) mix run priv/repo/seeds.exs

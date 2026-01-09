@@ -8,7 +8,7 @@ services:
   # The command `make setup` will `cp .env.example .env`.
   # You can then edit this newly created `.env` if needed.
 
-  lnm3_reverse_proxy:
+  reverse_proxy:
     build:
       context: ./infrastructure/reverse_proxy
       target: dev
@@ -23,14 +23,14 @@ services:
     networks:
       - front_network
     depends_on:
-      lnm3_platform:
+      platform:
         condition: service_healthy
-      lnm3_archive:
+      archive:
         condition: service_healthy
-      lnm3_frontend:
+      frontend:
         condition: service_healthy
 
-  lnm3_database:
+  database:
     build:
       context: ./infrastructure/database
       target: dev
@@ -43,7 +43,7 @@ services:
     networks:
       - database_network
 
-  lnm3_platform:
+  platform:
     build:
       context: ./services/platform
       target: dev
@@ -61,17 +61,17 @@ services:
       - ./services/platform:/app:rw,cached,z
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.lnm3_platform.rule=Host(`platform.localhost`)"
+      - "traefik.http.routers.platform.rule=Host(`platform.localhost`)"
       - "traefik.http.services.platform.loadbalancer.server.port=4000"
       - "traefik.docker.network=front_network"
     networks:
       - front_network
       - database_network
     depends_on:
-      lnm3_database:
+      database:
         condition: service_healthy
 
-  lnm3_archive:
+  archive:
     build:
       context: ./services/archive
       target: dev
@@ -84,12 +84,12 @@ services:
       - /app/var
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.lnm3_archive.rule=Host(`archive.localhost`)"
-      - "traefik.http.services.archive.loadbalancer.server.port=8000"
+      - "traefik.http.routers.archive.rule=Host(`archive.localhost`)"
+      - "traefik.http.services.archive.loadbalancer.server.port=9000"
     networks:
       - front_network
 
-  lnm3_frontend:
+  frontend:
     build:
       context: ./services/frontend
       target: dev
@@ -105,15 +105,15 @@ services:
       - /app/node_modules
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.lnm3_frontend.rule=Host(`localhost`)"
+      - "traefik.http.routers.frontend.rule=Host(`localhost`)"
       - "traefik.http.services.frontend.loadbalancer.server.port=3000"
     networks:
       - front_network
     depends_on:
-      lnm3_platform:
+      platform:
         condition: service_healthy
-      lnm3_archive:
-        condition: service_healthy
+      archive:
+        condition: service_started
 
 volumes:
   db-data:

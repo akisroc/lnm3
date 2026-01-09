@@ -57,8 +57,6 @@ config :platform, cors_origins: [
   "http://localhost",
   "http://www.localhost",
   "http://platform.localhost",
-  "http://archive.localhost",
-  "http://localhost:8000",
   "http://localhost:3000",
   ~r/^http:\/\/localhost(:\d+)?$/,
   ~r/^http:\/\/.*\.localhost(:\d+)?$/
