@@ -1,4 +1,5 @@
 defmodule Platform.Game.UnitArchetype do
+
   @moduledoc """
   Defines the static attributes for unit archetypes.
 
