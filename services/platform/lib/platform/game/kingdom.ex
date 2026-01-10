@@ -3,6 +3,38 @@ defmodule Platform.Game.Kingdom do
   import Ecto.Changeset
   import Platform.Utils.SlugUtils
 
+  @type troop :: [non_neg_integer()]
+
+  @type t :: %__MODULE__{
+    id: Platform.EctoTypes.UUIDv7.t() | nil,
+    user_id: Platform.EctoTypes.UUIDv7.t() | nil,
+    name: String.t() | nil,
+    slug: String.t() | nil,
+    fame: Decimal.t() | nil,
+    defense_troup: troop | nil,
+    attack_troup: troop | nil,
+    is_active: boolean() | nil,
+    is_removed: boolean() | nil,
+    inserted_at: DateTime.t() | nil,
+    updated_at: DateTiime.t() | nil,
+    user: Ecto.Association.NotLoaded.t() | Platform.Accounts.User.t()
+  }
+
+  @type loaded :: %__MODULE__{
+    id: Platform.EctoTypes.UUIDv7.t(),
+    user_id: Platform.EctoTypes.UUIDv7.t(),
+    name: String.t(),
+    slug: String.t(),
+    fame: Decimal.t(),
+    defense_troup: troop,
+    attack_troup: troop,
+    is_active: boolean(),
+    is_removed: boolean(),
+    inserted_at: DateTime.t(),
+    updated_at: DateTime.t(),
+    user: Ecto.Association.NotLoaded.t() | Platform.Accounts.User.t()
+  }
+
   @name_regex ~r/^[ a-zA-Z0-9éÉèÈêÊëËäÄâÂàÀïÏöÖôÔüÜûÛçÇ''’\-]+$/
   @slug_regex ~r/^[a-z0-9]+(?:-[a-z0-9]+)*$/
 
