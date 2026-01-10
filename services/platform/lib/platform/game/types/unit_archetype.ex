@@ -2,6 +2,23 @@ defmodule Platform.Game.UnitArchetype do
   @moduledoc """
   Defines the static attributes for unit archetypes.
 
+  Most of the values are derived directly or indirectly from legacy
+  LNM codebase.
+
+  > **Note**
+  >
+  > Why the `B` letter for a piece archetype? (:
+  >
+  > Ex: B1, B2, B3, etc.
+  >
+  > Years ago, when LNM was a popular PHP game in France, what I call now "pieces"
+  > by convention were soldiers trained in barracks. The word used in french for
+  > these barracks was "Bâtiment", so players were used to design these soldiers
+  > archetypes by B1, B3, B8, etc.
+  >
+  > "Une armée de B1 et B3" was a thing! I kept this naming tradition in the
+  > codebase by respect to the old LNM.
+
   ### Kill rate
 
   **Kill rate** of an archetype is defined as the **ratio of power to
@@ -60,32 +77,36 @@ defmodule Platform.Game.UnitArchetype do
     fame_cost: float()
   }
 
-  def get(1), do: b1()
-  def get(:b1), do: b1()
+  def get!(1), do: b1()
+  def get!(:b1), do: b1()
 
-  def get(2), do: b2()
-  def get(:b2), do: b2()
+  def get!(2), do: b2()
+  def get!(:b2), do: b2()
 
-  def get(3), do: b3()
-  def get(:b3), do: b3()
+  def get!(3), do: b3()
+  def get!(:b3), do: b3()
 
-  def get(4), do: b4()
-  def get(:b4), do: b4()
+  def get!(4), do: b4()
+  def get!(:b4), do: b4()
 
-  def get(5), do: b5()
-  def get(:b5), do: b5()
+  def get!(5), do: b5()
+  def get!(:b5), do: b5()
 
-  def get(6), do: b6()
-  def get(:b6), do: b6()
+  def get!(6), do: b6()
+  def get!(:b6), do: b6()
 
-  def get(7), do: b7()
-  def get(:b7), do: b7()
+  def get!(7), do: b7()
+  def get!(:b7), do: b7()
 
-  def get(8), do: b8()
-  def get(:b8), do: b8()
+  def get!(8), do: b8()
+  def get!(:b8), do: b8()
+
+  def get!(wrong_id) do
+    raise ArgumentError, message: "Wrong identifier `#{wrong_id}` for unit archetype"
+  end
 
   def all do
-    [get(1), get(2), get(3), get(4), get(5), get(6), get(7), get(8)]
+    [get!(1), get!(2), get!(3), get!(4), get!(5), get!(6), get!(7), get!(8)]
   end
 
   defp b1 do
@@ -98,6 +119,97 @@ defmodule Platform.Game.UnitArchetype do
       fame_drain_rate: 6.0,
       distance?: false,
       fame_cost: 2.86
+    }
+  end
+
+  defp b2 do
+    %__MODULE__{
+      label: :b2,
+      power: 3.0,
+      defense: 5.0,
+      speed: 86.0,
+      kill_rate: 0.6,
+      fame_drain_rate: 2.0,
+      distance?: true,
+      fame_cost: 3.14
+    }
+  end
+
+  defp b3 do
+    %__MODULE__{
+      label: :b3,
+      power: 5.0,
+      defense: 9.0,
+      speed: 95.0,
+      kill_rate: 0.55,
+      fame_drain_rate: 3.0,
+      distance?: false,
+      fame_cost: 4.5
+    }
+  end
+
+  defp b4 do
+    %__MODULE__{
+      label: :b4,
+      power: 5.0,
+      defense: 7.0,
+      speed: 84.0,
+      kill_rate: 0.71,
+      fame_drain_rate: 2.0,
+      distance?: true,
+      fame_cost: 5.33
+    }
+  end
+
+  defp b5 do
+    %__MODULE__{
+      label: :b5,
+      power: 18.0,
+      defense: 8.0,
+      speed: 80.0,
+      kill_rate: 2.25,
+      fame_drain_rate: 3.0,
+      distance?: false,
+      fame_cost: 7.2
+    }
+  end
+
+  defp b6 do
+    %__MODULE__{
+      label: :b6,
+      power: 10.0,
+      defense: 7.0,
+      speed: 98.0,
+      kill_rate: 1.43,
+      fame_drain_rate: 3.0,
+      distance?: true,
+      fame_cost: 8.0
+    }
+  end
+
+  defp b7 do
+    %__MODULE__{
+      label: :b7,
+      power: 24.0,
+      defense: 16.0,
+      speed: 88.0,
+      kill_rate: 1.5,
+      fame_drain_rate: 4.0,
+      distance?: false,
+      fame_cost: 12.0
+    }
+  end
+
+  defp b8 do
+    %__MODULE__{
+      label: :b8,
+      power: 19.0,
+      defense: 13.0,
+      speed: 90.0,
+      kill_rate: 1.46,
+      fame_drain_rate: 3.0,
+      distance?: true,
+      fame_cost: 13.25
     }
   end
 end
