@@ -87,6 +87,9 @@ Maybe check your `/etc/hosts` if something doesn’t work as expected.
 ### Database structure
 
 ```mermaid
+---
+title: LNM3 platform database schema
+---
 erDiagram
     USERS ||--o{ KINGDOMS : "owns"
     USERS ||--o{ PROTAGONISTS : "plays"
@@ -203,6 +206,25 @@ make setup
 It will copy the `.env.example` file into a newly
 created `.env`. You can customize it if needed, `docker compose`
 will read it.
+
+### Git worklow
+
+`master` is the main branch. It should be stable and tested.
+It receives PRs from development sub-branches or forks.
+
+When a release is ready, `master` is merged into `release` with
+`--no-ff`, and that merge commit is tagged with a version number
+following [SemVer](https://semver.org/) convention.
+
+```text
+release  ____________________________*(v1.2.0)_______*(v1.2.1)__
+                /                   /               /
+master   ______*_____*_____________*_______*_______*____________
+              / \   /             /       / \     /
+feature  ____/   \_/             /       /   \___/
+                                /       /
+hotfix   ______________________/_______/
+```
 
 ## Production Deployment
 
