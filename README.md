@@ -53,6 +53,44 @@ Traefik
 └── archive.domain.example ───── lnm3_archive:9000    # Archive API
 ```
 
+```mermaid
+graph TD
+%% Internet
+    Internet((Internet))
+
+%% Networks
+    subgraph front_network [front_network]
+        Traefik[Traefik Proxy]
+        Frontend[lnm3_frontend:3000]
+        Archive[lnm3_archive:9000]
+        Platform[lnm3_platform:4000]
+    end
+
+    subgraph database_network [database_network]
+        Database[(lnm3_database:5432)]
+        Platform_DB_Interface[lnm3_platform]
+    end
+
+%% External Routing
+    Internet -->|domain.example| Traefik
+    Internet -->|platform.domain.example| Traefik
+    Internet -->|archive.domain.example| Traefik
+
+%% HTTP Proxying
+    Traefik -.-> Frontend
+    Traefik -.-> Platform
+    Traefik -.-> Archive
+
+%% Database Internal Link
+    Platform <-->|Internal Port 5432| Database
+
+%% Styling
+    style front_network fill:#fff9c4,stroke:#fbc02d,stroke-dasharray: 5 5
+    style database_network fill:#ffcdd2,stroke:#e53935,stroke-dasharray: 5 5
+    style Platform fill:#e3f2fd,stroke:#1976d2,stroke-width:4px
+    style Database fill:#f5f5f5
+```
+
 The database communicates only with the Platform service through
 a shared `database_network`. It is isolated from the reverse
 proxy’s `front_network` and the external world.
@@ -77,10 +115,17 @@ Maybe check your `/etc/hosts` if something doesn’t work as expected.
 
 > **Note**
 > 
+> While the two REST APIs (Platform and Archive) are openly exposed
+> to the world – and are meant to be that way –, in reality they act
+> as a backend and will be mostly consumed by the frontend. I don’t
+> expect that much direct traffic to them.
+
+> **Note**
+> 
 > Traefik exposes its `localhost:8080/dashboard` in the `dev`
 > Docker stage **only**.
 > 
-> This is not to be deployed in production.
+> This is obviously not to be deployed in production.
 
 ---
 
