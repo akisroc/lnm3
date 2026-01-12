@@ -32,10 +32,13 @@ defmodule Platform.Accounts.Workers.SessionCleaner do
   defp clean_expired_sessions do
     case Platform.Accounts.Session.delete_expired_sessions() do
       {:ok, count} when count > 0 ->
-        Logger.info("Cleaned up #{count} expired session(s)")
+        Logger.info("[#{__MODULE__}] Cleaned up #{count} expired session(s)")
 
       {:ok, 0} ->
-        Logger.debug("No expired sessions to clean up")
+        Logger.debug("[#{__MODULE__}] No expired sessions to clean up")
+
+      {:error, reason} ->
+        Logger.error("[#{__MODULE__}] Cleanup failed: #{inspect(reason)}")
     end
   end
 end
