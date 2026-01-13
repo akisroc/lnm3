@@ -1,6 +1,7 @@
 defmodule Platform.Sovereignty.War do
-  alias Platform.Sovereignty.Ecto.Entities.Kingdom
-  alias Platform.Sovereignty.War.Types.{Troop, BattleState, Unit, UnitArchetype, BattleLogEntry, Battle}
+  alias Platform.Sovereignty.War.Types.{
+    Troop, BattleState, Unit, UnitArchetype, BattleLogEntry, BattleOutcome
+  }
 
   # ============================================================================
   # CONSTANTS & BALANCING
@@ -27,7 +28,7 @@ defmodule Platform.Sovereignty.War do
   @victory_threshold 1.10
 
   # --- FAME DRAIN
-  # Dampener: restraints base units’ fame drain  #
+  # Dampener: restraints base units’ fame drain
   # Underdog: clamped multiplier based on army strength ratio
   # Prestige slice: % of fame diff drained from a more famous loser
   @fame_drain_dampener 0.1
@@ -36,15 +37,18 @@ defmodule Platform.Sovereignty.War do
   @fame_difference_slice 0.05
 
   # ============================================================================
-  # LOGIC
+  # PUBLIC API
   # ============================================================================
 
-  @spec attack(Kingdom.loaded(), Kingdom.loaded()) :: {:ok, Battle.t()} | {:error, any()}
-  def attack(%Kingdom{} = atk_kingdom, %Kingdom{} = def_kingdom) do
-    atk_initial_troop = Troop.from_raw_list(atk_kingdom.attack_troop, true)
-    def_initial_troop = Troop.from_raw_list(def_kingdom.defense_troop, false)
-
-    flat_units = format_troops_for_fight(atk_initial_troop, defending_troop)
+  @spec attack([non_neg_integer()] | Troop.t(), [non_neg_integer()] | Troop.t(), float(), float()) :: {:ok, BattleOutcome.t()} | {:error, any()}
+  def attack([_,_,_,_,_,_,_,_] = atk_raw_troop, [_,_,_,_,_,_,_,_] = def_raw_troop, atk_fame, def_fame) do
+    with {:ok, atk_troop} <- Troop.from_raw(atk_raw_troop, true),
+         {:ok, def_troop} <- Troop.from_raw(def_raw_troop, false) do
+      attack(atk_troop, def_troop, atk_fame, def_fame)
+    end
+  end
+  def attack(%Troop{} = atk_initial_troop, %Troop{} = atk_def_troop, atk_fame, def_fame) do
+    flat_units = format_troops_for_fight(atk_initial_troop, atk_def_troop)
 
     initial_state = %BattleState{
       units: flat_units,
@@ -58,11 +62,11 @@ defmodule Platform.Sovereignty.War do
       # Fetching unit current state
       atk_unit = Enum.find(acc_state.units, &same_unit?(&1, unit))
 
-      # Unit already wiped or initially empty
+      # If unit already wiped or initially empty, we pass…
       if atk_unit.count === 0 do
         {:cont, acc_state}
 
-      # Execute battle phase
+      # … or else we execute battle phase
       else
         case atk_unit |> choose_target(acc_state.units) do
 
@@ -94,26 +98,29 @@ defmodule Platform.Sovereignty.War do
 
     end)
 
-    %Battle{
-      attacker_kingdom_id: atk_kingdom.id,
-      defender_kingdom_id: def_kingdom.id,
+    %BattleOutcome{
       attacker_initial_troop: atk_initial_troop,
       defender_initial_troop: def_initial_troop,
-      log: :queue.to_list(final_state.log_queue),
       attacker_final_troop: final_state.units |> Enum.filter(&(&1.attacker?)),
       defender_final_troop: final_state.units |> Enum.reject(&(&1.attacker?)),
+      log: :queue.to_list(final_state.log_queue),
+      attacker_initial_fame: atk_fame,
+      defender_initial_fame: def_fame,
     }
-    |> Battle.apply_winner()
-    |> Battle.apply_fame_drain()
+    |> apply_winner()
+    |> apply_fame_drain()
 
   end
+
+  # ============================================================================
+  # IMPLEMENTATION
+  # ============================================================================
 
   # Return a tuple.
   # First element is the total number of kills.
   # Second element is the list of kill steps which drove to given total.
-  @doc false
   @spec kill_steps(Unit.t(), Unit.t()) :: {non_neg_integer(), [non_neg_integer()]}
-  def kill_steps(u1, u2) do
+  defp kill_steps(u1, u2) do
     u2_initial_count = max(1, u2.count)
     slope_step = @kill_slope_factor / u2_initial_count
 
@@ -130,32 +137,32 @@ defmodule Platform.Sovereignty.War do
         luck
 
     # Accumulating kills through ticks, applying friction
-    Enum.reduce(1..@salvo_ticks, {0.0, []}, fn _tick, {acc_kill_count, acc_kill_steps} ->
-      remaining_u2_count = u2.count - acc_kill_count
+    {kill_count, steps} =
+      Enum.reduce(1..@salvo_ticks, {0.0, []}, fn _tick, {acc_kill_count, acc_kill_steps} ->
+        remaining_u2_count = u2.count - acc_kill_count
 
-      if remaining_u2_count > 0 do
-        friction = :math.tanh(remaining_u2_count * slope_step)
-        real_tick_dmg = min(base_dmg * friction, remaining_u2_count)
-        {acc_kill_count + real_tick_dmg, [trunc(real_tick_dmg) | acc_kill_steps]}
-      else
-        {acc_kill_count, [0 | steps]}
-      end
-    end)
-    |> Enum.reverse()
+        if remaining_u2_count > 0 do
+          friction = :math.tanh(remaining_u2_count * slope_step)
+          real_tick_dmg = min(base_dmg * friction, remaining_u2_count)
+          {acc_kill_count + real_tick_dmg, [trunc(real_tick_dmg) | acc_kill_steps]}
+        else
+          {acc_kill_count, [0 | steps]}
+        end
+      end)
+
+    {trunc(kill_count), Enum.reverse(steps)}
   end
 
-  @doc false
   @spec attacker_wins(Troop.t(), Troop.t()) :: boolean()
-  def attacker_wins?(attacker_final_troop, defender_final_troop) do
+  defp attacker_wins?(attacker_final_troop, defender_final_troop) do
     attacker_final_strength = Troop.military_strength(attacker_final_troop)
     defender_final_strength = Troop.military_strength(defender_final_troop)
 
     attacker_final_strength > (defender_final_strength * @victory_threshold)
   end
 
-  @doc false
-  @spec fame_drain(Troop.t(), Troop.t(), Decimal.t(), Decimal.t()) :: {Decimal.t(), Decimal.t()}
-  def fame_drain(winner_initial_troop, loser_initial_troop, winner_fame, loser_fame) do
+  @spec fame_drain(Troop.t(), Troop.t(), float(), float()) :: {float(), float()}
+  defp fame_drain(winner_initial_troop, loser_initial_troop, winner_fame, loser_fame) do
     winner_initial_strength = Troop.military_strength(winner_initial_troop)
     loser_initial_strength = Troop.military_strength(loser_initial_troop)
 
@@ -192,15 +199,15 @@ defmodule Platform.Sovereignty.War do
   defp choose_target!(striking_unit, stricken_troop) do
     stricken_troop
     |> Enum.reject(fn candidate_unit ->
-      same_side?(
-        candidate_unit,
-        striking_unit or
-          candidate_unit.count === 0 or
-          candidate_unit.stricken? or
-          !can_reach?(striking_unit(candidate_unit))
-      )
+      same_side?(candidate_unit, striking_unit) or
+      candidate_unit.count === 0 or
+      candidate_unit.stricken? or
+      !can_reach?(striking_unit, candidate_unit)
     end)
-    |> Enum.random()
+    |> case do
+      [] -> nil
+      list -> Enum.random(list)
+    end
   end
 
   @spec choose_target(Unit.t(), [Unit.t()]) :: Unit.t() | nil
@@ -208,6 +215,47 @@ defmodule Platform.Sovereignty.War do
     choose_target!(striking_unit, stricken_troop)
   rescue
     Enum.EmptyError -> nil
+  end
+
+  @spec apply_winner(BattleOutcome.t()) :: BattleOutcome.t()
+  defp apply_winner(%BattleOutcome{} = outcome) do
+    %BattleOutcome{
+      outcome |
+      attacker_wins?: attacker_wins?(outcome.attacker_final_troop, outcome.defender_final_troop)
+    }
+  end
+
+  @spec apply_fame_drain(BattleOutcome.t()) :: BattleOutcome.t()
+  defp apply_fame_drain(%BattleOutcome{} = outcome) do
+    {winner_initial_troop, loser_initial_troop, winner_fame, loser_fame} =
+      if outcome.attacker_wins? do
+        {
+          outcome.attacker_initial_troop, outcome.defender_initial_troop,
+          outcome.attacker_initial_fame, outcome.defender_initial_fame
+        }
+      else
+        {
+          outcome.defender_initial_troop, outcome.attacker_initial_troop,
+          outcome.defender_initial_fame, outcome.attacker_initial_fame
+        }
+      end
+
+    {winner_modifier, loser_modifier} = fame_drain(
+      winner_initial_troop, loser_initial_troop, winner_fame, loser_fame
+    )
+
+    {attacker_modifier, defender_modifier} =
+      if outcome.attacker_wins? do
+        {winner_modifier, loser_modifier}
+      else
+        {loser_modifier, winner_modifier}
+      end
+
+    %BattleOutcome{
+      outcome |
+      attacker_fame_modifier: attacker_modifier,
+      defender_fame_modifier: defender_modifier
+    }
   end
 
   # Merge two raw lists of units into one flat list, having them shuffled
@@ -239,7 +287,7 @@ defmodule Platform.Sovereignty.War do
 
   @spec same_archetype?(Unit.t(), Unit.t()) :: boolean()
   defp same_archetype?(u1, u2) do
-    u1.archetype.id === u2.archetype.id
+    u1.archetype.key === u2.archetype.key
   end
 
   @spec same_side?(Unit.t(), Unit.t()) :: boolean()

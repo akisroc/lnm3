@@ -15,22 +15,34 @@ defmodule Platform.Sovereignty.War.Types.Troop do
   `units` parameter must be a list a 8 positive integers.
   See: Platform.Sovereignty.Ecto.Types.Troop
   """
-  @spec from_raw_list([non_neg_integer()], boolean()) :: __MODULE__.t()
-  def from_raw_list(units, attacker?) do
-    %__MODULE__{
-      attacker?: attacker?,
-      units: units
-      |> Stream.with_index(1)
-      |> Enum.map(fn {unit_count, identifier} ->
-        %Unit{
-          archetype: UnitArchetype.get!(identifier),
-          count: unit_count,
+  @spec from_raw_troop([non_neg_integer()], boolean()) :: __MODULE__.t()
+  def from_raw_troop(units, attacker?) do
+    if Enum.all?(units, &is_integer/1) and length(units) === 8 do
+      {
+        :ok,
+        %__MODULE__{
           attacker?: attacker?,
-          stroke?: false,
-          stricken?: false
+          units: units
+          |> Stream.with_index(1)
+          |> Enum.map(fn {unit_count, identifier} ->
+            %Unit{
+              archetype: UnitArchetype.get!(identifier),
+              count: unit_count,
+              attacker?: attacker?,
+              stroke?: false,
+              stricken?: false
+            }
+          end)
         }
-    end)
-    }
+      }
+    else
+      {:error, :invalid_raw_troop_format}
+    end
+  end
+
+  @spec(__MODULE__.t()) :: [non_neg_integer()]
+  def to_raw_troop(%__MODULE__{units: units}) do
+    units |> Enum.map(fn %{count: count} -> count end)
   end
 
   @spec military_strength(__MODULE.t()) :: non_neg_integer()

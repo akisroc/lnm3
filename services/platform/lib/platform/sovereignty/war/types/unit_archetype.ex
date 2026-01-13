@@ -57,7 +57,7 @@ defmodule Platform.Sovereignty.War.Types.UnitArchetype do
   """
 
   @fields [
-    :label,
+    :key,
     :power,
     :defense,
     :speed,
@@ -71,7 +71,7 @@ defmodule Platform.Sovereignty.War.Types.UnitArchetype do
   defstruct @fields
 
   @type t :: %__MODULE__{
-    label: atom(),
+    key: atom(),
     power: float(),
     defense: float(),
     speed: float(),
@@ -81,33 +81,44 @@ defmodule Platform.Sovereignty.War.Types.UnitArchetype do
     fame_cost: float()
   }
 
-  @spec get!(non_neg_integer()) :: __MODULE__.t()
-  @spec get!(atom()) :: __MODULE__.t()
+  @spec get(non_neg_integer() | atom()) :: {:ok, __MODULE__.t()} | {:error, String.t()}
+  def get(1), do: {:ok, b1()}
+  def get(:b1), do: {:ok, b1()}
+  def get(2), do: {:ok, b2()}
+  def get(:b2), do: {:ok, b2()}
+  def get(3), do: {:ok, b3()}
+  def get(:b3), do: {:ok, b3()}
+  def get(4), do: {:ok, b4()}
+  def get(:b4), do: {:ok, b4()}
+  def get(5), do: {:ok, b5()}
+  def get(:b5), do: {:ok, b5()}
+  def get(6), do: {:ok, b6()}
+  def get(:b6), do: {:ok, b6()}
+  def get(7), do: {:ok, b7()}
+  def get(:b7), do: {:ok, b7()}
+  def get(8), do: {:ok, b8()}
+  def get(:b8), do: {:ok, b8()}
+  def get(wrong_id) do
+    {:error, "Wrong identifier `#{wrong_id}` for unit archetype"}
+  end
 
+  @spec get!(non_neg_integer() | atom()) :: __MODULE__.t()
   def get!(1), do: b1()
   def get!(:b1), do: b1()
-
   def get!(2), do: b2()
   def get!(:b2), do: b2()
-
   def get!(3), do: b3()
   def get!(:b3), do: b3()
-
   def get!(4), do: b4()
   def get!(:b4), do: b4()
-
   def get!(5), do: b5()
   def get!(:b5), do: b5()
-
   def get!(6), do: b6()
   def get!(:b6), do: b6()
-
   def get!(7), do: b7()
   def get!(:b7), do: b7()
-
   def get!(8), do: b8()
   def get!(:b8), do: b8()
-
   def get!(wrong_id) do
     raise ArgumentError, message: "Wrong identifier `#{wrong_id}` for unit archetype"
   end
@@ -119,7 +130,7 @@ defmodule Platform.Sovereignty.War.Types.UnitArchetype do
 
   defp b1 do
     %__MODULE__{
-      label: :b1,
+      key: :b1,
       power: 4.0,
       defense: 7.0,
       speed: 85.0,
@@ -132,7 +143,7 @@ defmodule Platform.Sovereignty.War.Types.UnitArchetype do
 
   defp b2 do
     %__MODULE__{
-      label: :b2,
+      key: :b2,
       power: 3.0,
       defense: 5.0,
       speed: 86.0,
@@ -145,7 +156,7 @@ defmodule Platform.Sovereignty.War.Types.UnitArchetype do
 
   defp b3 do
     %__MODULE__{
-      label: :b3,
+      key: :b3,
       power: 5.0,
       defense: 9.0,
       speed: 95.0,
@@ -158,7 +169,7 @@ defmodule Platform.Sovereignty.War.Types.UnitArchetype do
 
   defp b4 do
     %__MODULE__{
-      label: :b4,
+      key: :b4,
       power: 5.0,
       defense: 7.0,
       speed: 84.0,
@@ -171,7 +182,7 @@ defmodule Platform.Sovereignty.War.Types.UnitArchetype do
 
   defp b5 do
     %__MODULE__{
-      label: :b5,
+      key: :b5,
       power: 18.0,
       defense: 8.0,
       speed: 80.0,
@@ -184,7 +195,7 @@ defmodule Platform.Sovereignty.War.Types.UnitArchetype do
 
   defp b6 do
     %__MODULE__{
-      label: :b6,
+      key: :b6,
       power: 10.0,
       defense: 7.0,
       speed: 98.0,
@@ -197,7 +208,7 @@ defmodule Platform.Sovereignty.War.Types.UnitArchetype do
 
   defp b7 do
     %__MODULE__{
-      label: :b7,
+      key: :b7,
       power: 24.0,
       defense: 16.0,
       speed: 88.0,
@@ -210,7 +221,7 @@ defmodule Platform.Sovereignty.War.Types.UnitArchetype do
 
   defp b8 do
     %__MODULE__{
-      label: :b8,
+      key: :b8,
       power: 19.0,
       defense: 13.0,
       speed: 90.0,
