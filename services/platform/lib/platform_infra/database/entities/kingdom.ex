@@ -2,7 +2,7 @@ defmodule PlatformInfra.Database.Entities.Kingdom do
   use Ecto.Schema
   import Ecto.Changeset
 
-  alias PlatformInfra.Database.Entities.User
+  alias PlatformInfra.Database.Entities.{User, Protagonist}
   alias PlatformInfra.Database.Types.Troop
   alias PlatformInfra.Database.Types.{PrimaryKey, Slug}
 
@@ -51,6 +51,7 @@ defmodule PlatformInfra.Database.Entities.Kingdom do
     field :is_removed, :boolean, default: false
 
     belongs_to :user, User
+    has_many :protagonists, Protagonist
 
     timestamps()
   end

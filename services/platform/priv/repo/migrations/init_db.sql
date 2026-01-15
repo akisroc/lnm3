@@ -129,7 +129,7 @@ CREATE TABLE "protagonists" (
   "name" varchar(31) NOT NULL,
   "fame" numeric(12,3) NOT NULL DEFAULT (0.0),
   "slug" varchar(63) UNIQUE NOT NULL,
-  "anonymous" bool NOT NULL DEFAULT (true),
+  "is_anonymous" bool NOT NULL DEFAULT (true),
   "profile_picture" varchar(2048),
   "biography" text,
   "is_removed" bool NOT NULL DEFAULT (false),

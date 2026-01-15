@@ -26,22 +26,32 @@ defmodule PlatformInfra.Database.Accounts do
     end
   end
 
-  @doc """
-  Expected `attrs` structure:
-
-  {
-    "user": {"nickname": "…", "email": "…", "password": "…"}
-    "kingdom": {"name": "…"}
-    "leader_protagonist": {"name": "…"},
-  }
-  """
-  def register_user(%{"user_params" => }) do
+  def register_user(%{
+      user_nickname: user_nickname,
+      user_email: user_email,
+      user_password: user_password,
+      kingdom_name: kingdom_name,
+      leader_name: leader_name
+  }) do
     Multi.new()
-    |> Multi.insert(:user, User.create_changeset(%User{}, attrs))
 
-    # %User{}
-    # |> User.create_changeset(attrs)
-    # |> Repo.insert()
+    |> Multi.insert(:user, User.create_changeset(%User{}, %{
+      nickname: user_nickname, email: user_email, password: user_password
+    }))
+
+    |> Multi.insert(:protagonist, fn %{user: user} ->
+      Protagonist.create_changeset(%Protagonist{}, %{name: leader_name, user_id: user.id})
+    end)
+
+    |> Multi.insert(:kingdom, fn %{user: user, protagonist: leader} ->
+      Kingdom.create_changeset(%Kingdom{}, %{name: kingdom_name, user_id: user.id, leader_id: leader.id})
+    end)
+
+    |> Multi.update(:link_leader_to_kingdom, fn %{protagonist: leader, kingdom: kingdom} ->
+      Protagonist.update_changeset(leader, %{kingdom_id: kingdom.id})
+    end)
+
+    |> Repo.transaction()
   end
 
   def generate_session_token(user, ip_address, user_agent) do

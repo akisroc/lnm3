@@ -33,8 +33,24 @@ defmodule PlatformWeb.UserController do
     end
   end
 
-  def create(conn, %{"user" => user_params, "kingdom" => kingdom_params, "leader_protagonist" => leader_protagonist_params}) do
-    case Accounts.register_user(user_params, kingdom_params, leader_protagonist_params) do
+  @doc """
+  Create a complete account:
+  User + Kingdom + Protagonist leading the Kingdom
+  """
+  def create(conn, %{
+    "user" => %{"nickname" => user_nickname, "email" => user_email, "password" => user_password},
+    "kingdom" => %{"name" => kingdom_name},
+    "leader_protagonist" => %{"name" => leader_name}
+  }) do
+    registration_data = %{
+      user_nickname: user_nickname,
+      user_email: user_email,
+      user_password: user_password,
+      kingdom_name: kingdom_name,
+      leader_name: leader_name
+    }
+
+    case Accounts.register_user(registration_data) do
       {:ok, %{user: user, kingdom: kingdom, protagonist: protagonist}} ->
         conn
         |> put_status(:created)
@@ -55,7 +71,7 @@ defmodule PlatformWeb.UserController do
           }
         })
 
-      {:error, failed_operation, chagneset, _changes_so_far} ->
+      {:error, failed_operation, changeset, _changes_so_far} ->
         # Transform errors to JSON
         errors = Changeset.traverse_errors(changeset, fn {msg, opts} ->
           Regex.replace(~r"%{(\w+)}", msg, fn _, key ->
@@ -71,5 +87,18 @@ defmodule PlatformWeb.UserController do
         })
 
     end
+  end
+
+  def create(conn, _params) do
+    conn
+    |> put_status(:bad_request)
+    |> json(%{
+      error: "Invalid request structure",
+      expected_structure: %{
+        "user" => %{"nickname" => "John", "email" => "john@example.org", "password" => "abc123"},
+        "kingdom" => %{"name" => "Mordor"},
+        "leader_protagonist" => %{"name" => "Sauron"}
+      }
+    })
   end
 end

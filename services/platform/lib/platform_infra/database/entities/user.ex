@@ -2,7 +2,7 @@ defmodule PlatformInfra.Database.Entities.User do
   use Ecto.Schema
   import Ecto.Changeset
 
-  alias PlatformInfra.Database.Entities.Session
+  alias PlatformInfra.Database.Entities.{Session, Kingdom, Protagonist}
   alias PlatformInfra.Database.Types.{PrimaryKey, Slug, Url}
 
   @nickname_regex ~r/^[ a-zA-Z0-9éÉèÈêÊëËäÄâÂàÀïÏöÖôÔüÜûÛçÇ\'’\-_\.&]+$/
@@ -23,6 +23,8 @@ defmodule PlatformInfra.Database.Entities.User do
     field :is_removed, :boolean, default: false
 
     has_many :sessions, Session
+    has_many :kingdoms, Kingdom
+    has_many :protagonists, Protagonist
 
     timestamps(type: :utc_datetime)
   end
