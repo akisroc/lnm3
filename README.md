@@ -262,7 +262,7 @@ When a release is ready, `master` is merged into `release` with
 following [SemVer](https://semver.org/) convention.
 
 ```text
-release  ____________________________*(v1.2.0)_______*(v1.2.1)__
+release  ________*(v1.2.0)___________*(v1.2.1)_______*(v1.2.2)__
                 /                   /               /
 master   ______*_____*_____________*_______*_______*____________
               / \   /             /       / \     /
