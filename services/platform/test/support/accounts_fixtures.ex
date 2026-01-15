@@ -12,7 +12,7 @@ defmodule PlatformInfra.AccountsFixtures do
     {:ok, user} =
       attrs
       |> Enum.into(%{
-        username: "testuser#{System.unique_integer([:positive])}",
+        nickname: "testuser#{System.unique_integer([:positive])}",
         email: "user#{System.unique_integer([:positive])}@example.com",
         password: "password123456"
       })
@@ -26,7 +26,7 @@ defmodule PlatformInfra.AccountsFixtures do
   """
   def valid_user_attributes(attrs \\ %{}) do
     Enum.into(attrs, %{
-      username: "testuser",
+      nickname: "testuser",
       email: "test@example.com",
       password: "securepassword123"
     })

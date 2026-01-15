@@ -5,14 +5,14 @@ defmodule PlatformInfra.Database.Entities.User do
   alias PlatformInfra.Database.Entities.Session
   alias PlatformInfra.Database.Types.{PrimaryKey, Slug, Url}
 
-  @username_regex ~r/^[ a-zA-Z0-9éÉèÈêÊëËäÄâÂàÀïÏöÖôÔüÜûÛçÇ\'’\-_\.&]+$/
+  @nickname_regex ~r/^[ a-zA-Z0-9éÉèÈêÊëËäÄâÂàÀïÏöÖôÔüÜûÛçÇ\'’\-_\.&]+$/
   @email_regex ~r/^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/
 
   @primary_key {:id, PrimaryKey, autogenerate: true}
   @foreign_key_type PrimaryKey
 
   schema "users" do
-    field :username, :string
+    field :nickname, :string
     field :email, :string
     field :password, :string, redact: true  # Hides password in logs
 
@@ -30,15 +30,15 @@ defmodule PlatformInfra.Database.Entities.User do
   @doc false
   def create_changeset(user, attrs) do
     user
-    |> cast(attrs, [:username, :email, :profile_picture, :password, :slug, :platform_theme, :is_enabled])
-    |> validate_required([:username, :email, :password])
-    |> unique_constraint(:username, name: :idx_users_username_not_removed)
+    |> cast(attrs, [:nickname, :email, :profile_picture, :password, :slug, :platform_theme, :is_enabled])
+    |> validate_required([:nickname, :email, :password])
+    |> unique_constraint(:nickname, name: :idx_users_nickname_not_removed)
     |> unique_constraint(:email, name: :idx_users_email_not_removed)
     |> unique_constraint(:slug, name: :users_slug_key)
 
-    |> update_change(:username, &String.trim/1)
-    |> validate_length(:username, min: 1, max: 30)
-    |> validate_format(:username, @username_regex)
+    |> update_change(:nickname, &String.trim/1)
+    |> validate_length(:nickname, min: 1, max: 30)
+    |> validate_format(:nickname, @nickname_regex)
 
     |> update_change(:email, &String.trim/1)
     |> update_change(:email, &String.downcase/1)
@@ -48,7 +48,7 @@ defmodule PlatformInfra.Database.Entities.User do
     |> validate_inclusion(:platform_theme, [:dark, :light])
 
     |> PrimaryKey.ensure_generation()
-    |> Slug.generate(:username)
+    |> Slug.generate(:nickname)
 
     |> validate_length(:password, min: 8, max: 72)
     |> hash_password()

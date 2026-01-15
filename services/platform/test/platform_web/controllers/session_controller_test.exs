@@ -11,7 +11,7 @@
 #   describe "POST /login" do
 #     setup do
 #       user = AccountsFixtures.user_fixture(%{
-#          username: "loginuser",
+#          nickname: "loginuser",
 #         email: "login@example.com",
 #         password: "correctpassword123"
 #       })

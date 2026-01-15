@@ -25,7 +25,7 @@ defmodule PlatformWeb.SessionController do
         |> put_status(:ok)
         |> json(%{
           id: user.id,
-          username: user.username,
+          nickname: user.nickname,
           email: user.email,
           profile_picture: user.profile_picture,
           slug: user.slug

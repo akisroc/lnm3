@@ -7,7 +7,7 @@ defmodule PlatformWeb.UserControllerTest do
   describe "POST /register" do
     # test "creates user with valid data", %{conn: conn} do
     #   user_params = %{
-    #     username: "newuser",
+    #     nickname: "newuser",
     #     email: "newuser@example.com",
     #     password: "securepassword123"
     #   }
@@ -19,7 +19,7 @@ defmodule PlatformWeb.UserControllerTest do
 
     test "returns errors with invalid data", %{conn: conn} do
       user_params = %{
-        username: "",
+        nickname: "",
         email: "invalid-email",
         password: "short"
       }
@@ -27,7 +27,7 @@ defmodule PlatformWeb.UserControllerTest do
       conn = post(conn, ~p"/register", user: user_params)
 
       assert %{"errors" => errors} = json_response(conn, 422)
-      assert Map.has_key?(errors, "username")
+      assert Map.has_key?(errors, "nickname")
       assert Map.has_key?(errors, "email")
       assert Map.has_key?(errors, "password")
     end
@@ -36,7 +36,7 @@ defmodule PlatformWeb.UserControllerTest do
       _existing_user = AccountsFixtures.user_fixture(%{email: "taken@example.com"})
 
       user_params = %{
-        username: "differentuser",
+        nickname: "differentuser",
         email: "taken@example.com",
         password: "securepassword123"
       }
@@ -46,23 +46,23 @@ defmodule PlatformWeb.UserControllerTest do
       assert %{"errors" => %{"email" => _}} = json_response(conn, 422)
     end
 
-    test "returns error when username already exists", %{conn: conn} do
-      _existing_user = AccountsFixtures.user_fixture(%{username: "takenuser"})
+    test "returns error when nickname already exists", %{conn: conn} do
+      _existing_user = AccountsFixtures.user_fixture(%{nickname: "takenuser"})
 
       user_params = %{
-        username: "takenuser",
+        nickname: "takenuser",
         email: "different@example.com",
         password: "securepassword123"
       }
 
       conn = post(conn, ~p"/register", user: user_params)
 
-      assert %{"errors" => %{"username" => _}} = json_response(conn, 422)
+      assert %{"errors" => %{"nickname" => _}} = json_response(conn, 422)
     end
 
     test "hashes password before storing", %{conn: conn} do
       user_params = %{
-        username: "secureuser",
+        nickname: "secureuser",
         email: "secure@example.com",
         password: "myplaintextpassword"
       }

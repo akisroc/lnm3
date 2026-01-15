@@ -11,7 +11,7 @@
 #       attrs = valid_user_attributes()
 
 #       assert {:ok, %User{} = user} = Accounts.register_user(attrs)
-#       assert user.username == "testuser"
+#       assert user.nickname == "testuser"
 #       assert user.email == "test@example.com"
 #       assert user.slug == "testuser"
 #       assert user.is_enabled == true
@@ -21,16 +21,16 @@
 #       assert String.starts_with?(user.password, "$argon2")
 #     end
 
-#     test "generates unique slug from username" do
-#       attrs = valid_user_attributes(%{username: "Test User"})
+#     test "generates unique slug from nickname" do
+#       attrs = valid_user_attributes(%{nickname: "Test User"})
 
 #       assert {:ok, user} = Accounts.register_user(attrs)
 #       assert user.slug == "test-user"
 #     end
 
-#     test "requires username, email, and password" do
+#     test "requires nickname, email, and password" do
 #       assert {:error, changeset} = Accounts.register_user(%{})
-#       assert %{username: ["can't be blank"]} = errors_on(changeset)
+#       assert %{nickname: ["can't be blank"]} = errors_on(changeset)
 #       assert %{email: ["can't be blank"]} = errors_on(changeset)
 #       assert %{password: ["can't be blank"]} = errors_on(changeset)
 #     end
@@ -49,12 +49,12 @@
 #       assert %{password: ["should be at least 8 character(s)"]} = errors_on(changeset)
 #     end
 
-#     test "validates username uniqueness" do
-#       user = user_fixture(%{username: "uniqueuser"})
-#       attrs = valid_user_attributes(%{username: "uniqueuser"})
+#     test "validates nickname uniqueness" do
+#       user = user_fixture(%{nickname: "uniqueuser"})
+#       attrs = valid_user_attributes(%{nickname: "uniqueuser"})
 
 #       assert {:error, changeset} = Accounts.register_user(attrs)
-#       assert %{username: ["has already been taken"]} = errors_on(changeset)
+#       assert %{nickname: ["has already been taken"]} = errors_on(changeset)
 #     end
 
 #     test "validates email uniqueness" do

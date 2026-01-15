@@ -21,7 +21,7 @@ alias PlatformInfra.Database.Accounts
 
 # INITIAL ADMIN
 admin_params = %{
-  username: System.get_env("ADMIN_USERNAME") || "Admin",
+  nickname: System.get_env("ADMIN_USERNAME") || "Admin",
   email: System.get_env("ADMIN_EMAIL") || "admin@akisroc.org",
   password: System.get_env("ADMIN_PASSWORD") || "devdevdev"
 }
@@ -47,13 +47,13 @@ if env in [:test, :dev] do
 
   # --- USERS ---
   Repo.transaction(fn ->
-    usernames = Faker.Util.sample_uniq(@nb_of_users, &Faker.Internet.user_name/0)
+    nicknames = Faker.Util.sample_uniq(@nb_of_users, &Faker.Internet.user_name/0)
     emails = Faker.Util.sample_uniq(@nb_of_users, &Faker.Internet.safe_email/0)
 
     for i <- 1..@nb_of_users do
       user = %User{}
       |> User.create_changeset(%{
-        username: Enum.at(usernames, i - 1),
+        nickname: Enum.at(nicknames, i - 1),
         email: Enum.at(emails, i - 1),
         password: Faker.String.base64(16)
       })

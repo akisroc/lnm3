@@ -160,7 +160,7 @@ erDiagram
 
     USERS {
         uuid id PK
-        varchar username
+        varchar nickname
         varchar email
         varchar slug
         platform_theme_enum platform_theme

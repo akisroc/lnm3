@@ -1,7 +1,9 @@
 defmodule PlatformInfra.Database.Accounts do
   import Ecto.Query
 
-  alias PlatformInfra.Database.Entities.{User, Session}
+  alias Ecto.Multi
+
+  alias PlatformInfra.Database.Entities.{User, Session, Kingdom, Protagonist}
   alias PlatformInfra.Repo
 
   @session_validity_in_days 120
@@ -24,10 +26,22 @@ defmodule PlatformInfra.Database.Accounts do
     end
   end
 
-  def register_user(attrs \\ %{}) do
-    %User{}
-    |> User.create_changeset(attrs)
-    |> Repo.insert()
+  @doc """
+  Expected `attrs` structure:
+
+  {
+    "user": {"nickname": "…", "email": "…", "password": "…"}
+    "kingdom": {"name": "…"}
+    "leader_protagonist": {"name": "…"},
+  }
+  """
+  def register_user(%{"user_params" => }) do
+    Multi.new()
+    |> Multi.insert(:user, User.create_changeset(%User{}, attrs))
+
+    # %User{}
+    # |> User.create_changeset(attrs)
+    # |> Repo.insert()
   end
 
   def generate_session_token(user, ip_address, user_agent) do

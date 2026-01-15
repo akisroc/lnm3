@@ -57,7 +57,7 @@ CREATE TYPE "platform_theme_enum" AS ENUM (
 -- USERS
 CREATE TABLE "users" (
   "id" uuid PRIMARY KEY,
-  "username" varchar(31) NOT NULL,
+  "nickname" varchar(31) NOT NULL,
   "email" varchar(255) NOT NULL,
   "profile_picture" varchar(2048),
   "password" varchar(511) NOT NULL,
@@ -67,7 +67,7 @@ CREATE TABLE "users" (
   "is_removed" bool NOT NULL DEFAULT (false),
   "inserted_at" timestamp NOT NULL DEFAULT (CURRENT_TIMESTAMP),
   "updated_at" timestamp NOT NULL DEFAULT (CURRENT_TIMESTAMP),
-  CONSTRAINT "chk_users_username_format" CHECK (username ~ '^[ a-zA-Z0-9éÉèÈêÊëËäÄâÂàÀïÏöÖôÔüÜûÛçÇ''’\-_\.&]+$'),
+  CONSTRAINT "chk_users_nickname_format" CHECK (nickname ~ '^[ a-zA-Z0-9éÉèÈêÊëËäÄâÂàÀïÏöÖôÔüÜûÛçÇ''’\-_\.&]+$'),
   CONSTRAINT "chk_users_email_format" CHECK (email ~* '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$'),
   CONSTRAINT "chk_users_slug_format" CHECK (slug ~ '^[a-z0-9]+(?:-[a-z0-9]+)*$')
 );
@@ -248,7 +248,7 @@ CREATE TABLE "sessions" (
 -- ------------
 
 -- USERS
-CREATE UNIQUE INDEX "idx_users_username_not_removed" ON "users" ("username") WHERE "is_removed" = false;
+CREATE UNIQUE INDEX "idx_users_nickname_not_removed" ON "users" ("nickname") WHERE "is_removed" = false;
 CREATE UNIQUE INDEX "idx_users_email_not_removed" ON "users" ("email") WHERE "is_removed" = false;
 
 -- KINGDOMS

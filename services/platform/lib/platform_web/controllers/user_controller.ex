@@ -1,6 +1,7 @@
 defmodule PlatformWeb.UserController do
   use PlatformWeb, :controller
 
+  alias Ecto.Changeset
   alias PlatformInfra.Database.Accounts
 
   def me(conn, _params) do
@@ -14,7 +15,7 @@ defmodule PlatformWeb.UserController do
           |> put_status(:ok)
           |> json(%{
             id: user.id,
-            username: user.username,
+            nickname: user.nickname,
             email: user.email,
             profile_picture: user.profile_picture,
             slug: user.slug
@@ -32,24 +33,43 @@ defmodule PlatformWeb.UserController do
     end
   end
 
-  def create(conn, %{"user" => user_params}) do
-    case Accounts.register_user(user_params) do
-      {:ok, user} ->
-      conn
-      |> put_status(:created)
-      |> json(%{message: "User created", slug: user.slug})
+  def create(conn, %{"user" => user_params, "kingdom" => kingdom_params, "leader_protagonist" => leader_protagonist_params}) do
+    case Accounts.register_user(user_params, kingdom_params, leader_protagonist_params) do
+      {:ok, %{user: user, kingdom: kingdom, protagonist: protagonist}} ->
+        conn
+        |> put_status(:created)
+        |> json(%{
+          user: %{
+            id: user.id,
+            nickname: user.nickname,
+            email: user.email,
+            slug: user.slug
+          },
+          kingdom: %{
+            id: kingdom.id,
+            name: kingdom.name
+          },
+          protagonist: %{
+            id: protagonist.id,
+            name: protagonist.name
+          }
+        })
 
-    {:error, %Ecto.Changeset{} = changeset} ->
-      errors = Ecto.Changeset.traverse_errors(changeset, fn {msg, opts} ->
-        # Transform error to JSON
-        Regex.replace(~r"%{(\w+)}", msg, fn _, key ->
-          inspect(get_in(opts, [String.to_existing_atom(key)]))
+      {:error, failed_operation, chagneset, _changes_so_far} ->
+        # Transform errors to JSON
+        errors = Changeset.traverse_errors(changeset, fn {msg, opts} ->
+          Regex.replace(~r"%{(\w+)}", msg, fn _, key ->
+            inspect(get_in(opts, [String.to_existing_atom(key)]))
+          end)
         end)
-      end)
 
-      conn
-      |> put_status(:unprocessable_entity)
-      |> json(%{errors: errors})
+        conn
+        |> put_status(:unprocessable_entity)
+        |> json(%{
+          error: "Registration failed at step: #{failed_operation}",
+          details: errors
+        })
+
     end
   end
 end
