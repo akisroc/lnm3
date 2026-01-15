@@ -232,6 +232,10 @@ Some points:
 - Keys are UUIDv7 generated in code.
 - Passwords use Argon2id hash.
 
+> **Note**
+> 
+> Initial database creation script can be found in [this file](./services/platform/priv/repo/migrations/init_db.sql).
+
 ## Development
 
 ### Prerequisites
