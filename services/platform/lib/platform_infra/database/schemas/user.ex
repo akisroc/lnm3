@@ -8,6 +8,9 @@ defmodule PlatformInfra.Database.Schemas.User do
   @nickname_regex ~r/^[ a-zA-Z0-9éÉèÈêÊëËäÄâÂàÀïÏöÖôÔüÜûÛçÇ\'’\-_\.&]+$/
   @email_regex ~r/^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/
 
+  @roles [:user, :curator, :admin]
+  @themes [:dark, :light]
+
   @primary_key {:id, PrimaryKey, autogenerate: true}
   @foreign_key_type PrimaryKey
 
@@ -18,7 +21,8 @@ defmodule PlatformInfra.Database.Schemas.User do
 
     field :profile_picture, Url
     field :slug, Slug
-    field :platform_theme, Ecto.Enum, values: [:dark, :light]
+    field :roles, {:array, Ecto.Enum}, values: @roles
+    field :platform_theme, Ecto.Enum, values: @themes
     field :is_enabled, :boolean, default: true
     field :is_removed, :boolean, default: false
 
@@ -32,7 +36,7 @@ defmodule PlatformInfra.Database.Schemas.User do
   @doc false
   def create_changeset(user, attrs) do
     user
-    |> cast(attrs, [:nickname, :email, :profile_picture, :password, :slug, :platform_theme, :is_enabled])
+    |> cast(attrs, [:nickname, :email, :profile_picture, :password, :slug, :roles, :platform_theme, :is_enabled])
     |> validate_required([:nickname, :email, :password])
     |> unique_constraint(:nickname, name: :idx_users_nickname_not_removed)
     |> unique_constraint(:email, name: :idx_users_email_not_removed)
@@ -47,7 +51,8 @@ defmodule PlatformInfra.Database.Schemas.User do
     |> validate_length(:email, min: 1, max: 500)
     |> validate_format(:email, @email_regex)
 
-    |> validate_inclusion(:platform_theme, [:dark, :light])
+    |> validate_subset(:roles, @roles)
+    |> validate_inclusion(:platform_theme, @themes)
 
     |> PrimaryKey.ensure_generation()
     |> Slug.generate(:nickname)

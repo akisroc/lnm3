@@ -44,6 +44,12 @@ BEGIN
 -- TYPES
 -- ------------
 
+CREATE TYPE "user_role_enum" AS ENUM(
+  'user',
+  'curator',
+  'admin'
+);
+
 CREATE TYPE "platform_theme_enum" AS ENUM (
   'dark',
   'light'
@@ -62,6 +68,7 @@ CREATE TABLE "users" (
   "profile_picture" varchar(2048),
   "password" varchar(511) NOT NULL,
   "slug" varchar(63) UNIQUE NOT NULL,
+  "roles" user_role_enum[] NOT NULL DEFAULT '{user}',
   "platform_theme" platform_theme_enum NOT NULL DEFAULT 'dark',
   "is_enabled" bool NOT NULL DEFAULT (true),
   "is_removed" bool NOT NULL DEFAULT (false),
@@ -75,7 +82,7 @@ CREATE TABLE "users" (
 -- SHOUTS
 CREATE TABLE "shouts" (
   "id" uuid PRIMARY KEY,
-  "protagonist_id" uuid NOT NULL,
+  "user_id" uuid NOT NULL,
   "content" text,
   "inserted_at" timestamp NOT NULL DEFAULT (CURRENT_TIMESTAMP),
   "updated_at" timestamp NOT NULL DEFAULT (CURRENT_TIMESTAMP),
@@ -334,7 +341,7 @@ CREATE INDEX "sessions_user_id" ON "sessions" ("user_id");
 -- ------------
 
 -- SHOUTS
-ALTER TABLE "shouts" ADD FOREIGN KEY ("protagonist_id") REFERENCES "protagonists" ("id");
+ALTER TABLE "shouts" ADD FOREIGN KEY ("user_id") REFERENCES "users" ("id");
 
 -- WHISPERS
 ALTER TABLE "whispers" ADD FOREIGN KEY ("sender_id") REFERENCES "protagonists" ("id");
@@ -393,7 +400,7 @@ ALTER TABLE "sessions" ADD FOREIGN KEY ("user_id") REFERENCES "users" ("id");
 -- ------------
 
 -- SHOUTS
-COMMENT ON TABLE "shouts" IS 'Chat messages between protagonists (only one general channel)';
+COMMENT ON TABLE "shouts" IS 'Chat messages between users (only one general channel)';
 
 -- WHISPERS
 COMMENT ON TABLE "whispers" IS 'Private messages between two protagonists';

@@ -136,6 +136,7 @@ Maybe check your `/etc/hosts` if something doesn’t work as expected.
 title: LNM3 platform database schema
 ---
 erDiagram
+    USERS ||--o{ SHOUTS : "sends"
     USERS ||--o{ KINGDOMS : "owns"
     USERS ||--o{ PROTAGONISTS : "plays"
     USERS ||--o{ CHRONICLES : "masters"
@@ -149,11 +150,10 @@ erDiagram
     KINGDOMS ||--o{ MISSIVES : "sends/receives"
     KINGDOMS |o--o| PROTAGONISTS : "led_by"
 
-    PROTAGONISTS ||--o{ SHOUTS : "shouts"
     PROTAGONISTS ||--o{ WHISPERS : "sends/receives"
     PROTAGONISTS ||--o{ PROTAGONISTS_CHRONICLES : "participates"
     PROTAGONISTS ||--o{ CHAPTERS : "writes"
-    
+
     CHRONICLES ||--o{ PROTAGONISTS_CHRONICLES : "includes"
     CHRONICLES ||--o{ CHAPTERS : "contains"
     
@@ -196,7 +196,7 @@ erDiagram
 
     SHOUTS {
         uuid id PK
-        uuid protagonist_id FK
+        uuid user_id FK
         text content
         timestamp inserted_at
     }
