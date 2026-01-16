@@ -13,7 +13,7 @@
 import Ecto.Query
 
 alias PlatformInfra.Repo
-alias PlatformInfra.Database.Entities.{User, Session, Kingdom}
+alias PlatformInfra.Database.Schemas.{User, Session, Kingdom}
 alias PlatformInfra.Database.Accounts
 
 @nb_of_users = 50

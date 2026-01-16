@@ -2,7 +2,7 @@ defmodule PlatformWeb.UserControllerTest do
   use PlatformWeb.ConnCase, async: true
 
   alias PlatformInfra.AccountsFixtures
-  alias PlatformInfra.Database.Entities.User
+  alias PlatformInfra.Database.Schemas.User
 
   alias PlatformInfra.Database.Types.Slug
 

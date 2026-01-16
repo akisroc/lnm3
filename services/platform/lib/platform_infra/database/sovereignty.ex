@@ -3,9 +3,9 @@ defmodule PlatformInfra.Database.Sovereignty do
 
   alias PlatformInfra.Repo
   alias PlatformInfra.Database.Types.PrimaryKey
-  alias PlatformInfra.Database.Entities.Kingdom
+  alias PlatformInfra.Database.Schemas.Kingdom
 
-  alias PlatformInfra.Database.Entities.Battle
+  alias PlatformInfra.Database.Schemas.Battle
   alias Platform.Sovereignty.War.Types.{BattleOutcome, BattleLogEntry, Troop}
 
   @spec get_kingdom(PrimaryKey.t()) :: {:ok, Kingdom.t()} | {:error, :not_found}

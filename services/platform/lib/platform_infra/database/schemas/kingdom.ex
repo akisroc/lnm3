@@ -1,8 +1,8 @@
-defmodule PlatformInfra.Database.Entities.Kingdom do
+defmodule PlatformInfra.Database.Schemas.Kingdom do
   use Ecto.Schema
   import Ecto.Changeset
 
-  alias PlatformInfra.Database.Entities.{User, Protagonist}
+  alias PlatformInfra.Database.Schemas.{User, Protagonist}
   alias PlatformInfra.Database.Types.Troop
   alias PlatformInfra.Database.Types.{PrimaryKey, Slug}
 

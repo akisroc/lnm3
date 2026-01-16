@@ -3,7 +3,7 @@ defmodule PlatformInfra.Database.Accounts do
 
   alias Ecto.Multi
 
-  alias PlatformInfra.Database.Entities.{User, Session, Kingdom, Protagonist}
+  alias PlatformInfra.Database.Schemas.{User, Session, Kingdom, Protagonist}
   alias PlatformInfra.Repo
 
   @session_validity_in_days 120

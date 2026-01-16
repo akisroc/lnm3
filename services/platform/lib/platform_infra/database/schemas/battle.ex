@@ -1,9 +1,9 @@
-defmodule PlatformInfra.Database.Entities.Battle do
+defmodule PlatformInfra.Database.Schemas.Battle do
   use Ecto.Schema
   import Ecto.Changeset
 
   alias PlatformInfra.Database.Types.Troop
-  alias PlatformInfra.Database.Entities.Kingdom
+  alias PlatformInfra.Database.Schemas.Kingdom
   alias PlatformInfra.Database.Types.PrimaryKey
 
   @type t :: %__MODULE__{

@@ -1,8 +1,8 @@
-defmodule PlatformInfra.Database.Entities.Session do
+defmodule PlatformInfra.Database.Schemas.Session do
   use Ecto.Schema
   import Ecto.Changeset
 
-  alias PlatformInfra.Database.Entities.User
+  alias PlatformInfra.Database.Schemas.User
   alias PlatformInfra.Database.Types.PrimaryKey
 
   @primary_key {:id, PrimaryKey, autogenerate: true}

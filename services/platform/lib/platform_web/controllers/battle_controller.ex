@@ -1,8 +1,8 @@
 defmodule PlatformWeb.BattleController do
   use PlatformWeb, :controller
 
-  alias PlatformInfra.Database.Entities.Kingdom
-  alias PlatformInfra.Database.Entities.User
+  alias PlatformInfra.Database.Schemas.Kingdom
+  alias PlatformInfra.Database.Schemas.User
   alias PlatformInfra.Database.Sovereignty, as: SovereigntyRepo
   alias Platform.Sovereignty.War
 

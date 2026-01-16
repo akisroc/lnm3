@@ -1,5 +1,5 @@
 defmodule PlatformWeb.Views.BattleJSON do
-  alias PlatformInfra.Database.Entities.Battle
+  alias PlatformInfra.Database.Schemas.Battle
 
   @public_fields [
     :id,

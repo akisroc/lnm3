@@ -1,8 +1,8 @@
-defmodule PlatformInfra.Database.Entities.Protagonist do
+defmodule PlatformInfra.Database.Schemas.Protagonist do
   use Ecto.Schema
   import Ecto.Changeset
 
-  alias PlatformInfra.Database.Entities.{User, Kingdom}
+  alias PlatformInfra.Database.Schemas.{User, Kingdom}
   alias PlatformInfra.Database.Types.{PrimaryKey, Slug, Url}
 
   @name_regex ~r/^[ a-zA-Z0-9éÉèÈêÊëËäÄâÂàÀïÏöÖôÔüÜûÛçÇ''’\-]+$/
