@@ -75,7 +75,7 @@ CREATE TABLE "users" (
 -- SHOUTS
 CREATE TABLE "shouts" (
   "id" uuid PRIMARY KEY,
-  "user_id" uuid NOT NULL,
+  "protagonist_id" uuid NOT NULL,
   "content" text,
   "inserted_at" timestamp NOT NULL DEFAULT (CURRENT_TIMESTAMP),
   "updated_at" timestamp NOT NULL DEFAULT (CURRENT_TIMESTAMP),
@@ -334,11 +334,11 @@ CREATE INDEX "sessions_user_id" ON "sessions" ("user_id");
 -- ------------
 
 -- SHOUTS
-ALTER TABLE "shouts" ADD FOREIGN KEY ("user_id") REFERENCES "users" ("id");
+ALTER TABLE "shouts" ADD FOREIGN KEY ("protagonist_id") REFERENCES "protagonists" ("id");
 
 -- WHISPERS
-ALTER TABLE "whispers" ADD FOREIGN KEY ("sender_id") REFERENCES "users" ("id");
-ALTER TABLE "whispers" ADD FOREIGN KEY ("receiver_id") REFERENCES "users" ("id");
+ALTER TABLE "whispers" ADD FOREIGN KEY ("sender_id") REFERENCES "protagonists" ("id");
+ALTER TABLE "whispers" ADD FOREIGN KEY ("receiver_id") REFERENCES "protagonists" ("id");
 
 -- KINGDOMS
 ALTER TABLE "kingdoms" ADD FOREIGN KEY ("user_id") REFERENCES "users" ("id");
@@ -393,12 +393,12 @@ ALTER TABLE "sessions" ADD FOREIGN KEY ("user_id") REFERENCES "users" ("id");
 -- ------------
 
 -- SHOUTS
-COMMENT ON TABLE "shouts" IS 'Chat messages (only one general channel)';
+COMMENT ON TABLE "shouts" IS 'Chat messages between protagonists (only one general channel)';
 
 -- WHISPERS
-COMMENT ON TABLE "whispers" IS 'Private messages between two users';
-COMMENT ON COLUMN "whispers"."sender_id" IS 'User sending the whisper';
-COMMENT ON COLUMN "whispers"."receiver_id" IS 'User receiving the whisper';
+COMMENT ON TABLE "whispers" IS 'Private messages between two protagonists';
+COMMENT ON COLUMN "whispers"."sender_id" IS 'Protagonist sending the whisper';
+COMMENT ON COLUMN "whispers"."receiver_id" IS 'Protagonist receiving the whisper';
 
 -- KINGDOMS
 COMMENT ON COLUMN "kingdoms"."leader_id" IS 'Protagonist leading the kingdom';
