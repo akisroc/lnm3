@@ -6,9 +6,10 @@ defmodule PlatformWeb.BattleController do
   alias PlatformInfra.Database.Sovereignty, as: SovereigntyRepo
   alias Platform.Sovereignty.War
 
-  def attack(conn, %{"atk_kingdom_id" => atk_kingdom_id, "def_kingdom_id" => def_kingdom_id}) do
-    user = conn.assigns.current_account
-
+  def attack(
+    %{assigns: %{current_account: user}} = conn,
+    %{"atk_kingdom_id" => atk_kingdom_id, "def_kingdom_id" => def_kingdom_id}
+  ) do
     with {:ok, atk_kingdom} <- SovereigntyRepo.get_kingdom(atk_kingdom_id),
          {:ok, def_kingdom} <- SovereigntyRepo.get_kingdom(def_kingdom_id),
          :ok <- check_ownership(atk_kingdom, user),
@@ -37,22 +38,12 @@ defmodule PlatformWeb.BattleController do
   end
 
   @spec check_ownership(Kingdom.t(), User.t()) :: :ok | {:error, :unauthorized}
-  defp check_ownership(kingdom, user) do
-    if kingdom.user_id == user.id do
-      :ok
-    else
-      {:error, :unauthorized}
-    end
-  end
+  defp check_ownership(%{user_id: u_id}, %{id: u_id}), do: :ok
+  defp check_ownership(_, _), do: {:error, :unauthorized}
 
   @spec check_active_status(Kingdom.t(), Kingdom.t()) :: :ok | {:error, :inactive_kingdom}
-  defp check_active_status(atk_kingdom, def_kingdom) do
-    if atk_kingdom.is_active? and def_kingdom.is_active? do
-      :ok
-    else
-      {:error, :inactive_kingdom}
-    end
-  end
+  defp check_active_status(%{is_active: true}, %{is_active: true}), do: :ok
+  defp check_active_status(_, _), do: {:error, :inactive_kingdom}
 
   defp error(conn, status, message) do
     conn
